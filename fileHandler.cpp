@@ -33,6 +33,7 @@ void writeRecords(const std::string &filename, const char *buffer, long long siz
     try
     {
         std::ofstream outFile(filename, std::ios::binary);
+        outFile.exceptions(std::ofstream::failbit | std::ofstream::badbit);
         outFile.seekp(offSet, std::ios::beg);
         outFile.write(buffer, size);
         outFile.close();
