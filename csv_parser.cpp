@@ -3,9 +3,10 @@
 #ifndef _CSVParser
 #define _CSVParser 0
 
+#define buffer_limit 10*1024*1024    //10 MB
+
 #include <iostream>
 #include <fstream>
-#include <sstream>
 #include <vector>
 #include <string>
 
@@ -17,22 +18,28 @@ std::string trim(const std::string& str) {
     return str.substr(first, last - first + 1);
 }
 
-void parseCSV(const std::ifstream &file, schema & tableSchema) {
+std::vector<std::string> * parseCSV(std::ifstream &file) {
 
-    
+    std::vector<std::string> * parsed_data = new std::vector<std::string>;
+
+    unsigned int current_buffer = 0;
     std::string line;
-    
-    // Read CSV line by line
-    while (std::getline(file, line)) {
-        std::stringstream ss(line);
-        std::string value;
-        bool insideQuotes = false;
-        std::vector<std::string> parsedValues;
-        std::string temp;
+    bool limitReached = false;
 
-        // Parse the line, handling quoted strings with commas
+    // Read CSV line by line
+    while ((!limitReached) && std::getline(file, line)) {
+        bool insideQuotes = false;
+        std::string temp;
+        current_buffer += line.size();
+
+        if (current_buffer >= buffer_limit)
+        {
+            limitReached = true;
+        }
+        
+
         // Temporary implementation
-        //Bug: Quotation inside the string and comma. "Hi, "How are you?, Fine.",
+        // Bug: Quotation inside the string and comma. "Hi, "How are you?, Fine.", skipping insided double quotes. 
 
         for (char c : line) {
             if (c == '"') {
@@ -40,7 +47,7 @@ void parseCSV(const std::ifstream &file, schema & tableSchema) {
             }
             else if (c == ',' && !insideQuotes) {
                 // If not inside quotes, this is a delimiter
-                parsedValues.push_back(trim(temp));
+                parsed_data->push_back(trim(temp));
                 temp.clear();
             }
             else {
@@ -48,32 +55,35 @@ void parseCSV(const std::ifstream &file, schema & tableSchema) {
             }
         }
         // the last value after the loop
-        parsedValues.push_back(trim(temp));
-
-        push_to_vector(parsedValues, tableSchema); //
-
+        parsed_data->push_back(trim(temp));
+        
     }
+
+    if (parsed_data->size()==0)
+    {
+        return nullptr;
+    }else{
+        return parsed_data;
+    }
+    
 }
 
 int main() {
-    // Vectors to store the parsed column data
-    std::vector<int> intColumn;
-    std::vector<float> floatColumn;
-    std::vector<std::string> stringColumn;
+    std::ifstream csvFile;
+    csvFile.open("/home/gokul-zstk330/Downloads/temp.csv");
+    std::vector<std::string> * parsed = parseCSV(csvFile);
 
-    // Parse the CSV file
-    parseCSV("data.csv", intColumn, floatColumn, stringColumn);
-
-    // Print the parsed data for verification
-    std::cout << "Parsed CSV Data:" << std::endl;
-    for (size_t i = 0; i < intColumn.size(); ++i) {
-        std::cout << intColumn[i] << ", " << floatColumn[i] << ", " << stringColumn[i] << std::endl;
+    if (parsed != nullptr)
+    {
+        for (int i =0; i < parsed->size(); i++)
+        {
+            std::cout << (*parsed)[i] << std::endl;
+        }
+        
     }
-
+    
     return 0;
 }
 
-
-void push_to_vector(std::vector *);
 
 #endif
