@@ -34,8 +34,17 @@ struct data{
 
 
 
-template <typename dt>
 struct column_meta
+{
+    int total_records;
+    int data_type;
+    int no_block;
+};
+
+
+
+template <typename dt>
+struct block_meta
 {
     int count;
     dt min;
@@ -47,15 +56,15 @@ struct column_meta
 template <typename dt>
 struct column_obj
 {
-    column_meta<dt> meta;
+    block_meta<dt> meta;
     // data<dt>* all_data;
     union all_data{
-        std::vector<int> int_data;
-        std::vector<float> float_data;
-        std::vector<long> long_data;
-        std::vector<double> double_data;
-        std::vector<Dbstr> str_data;
-        std::vector<char> char_data;
+        std::vector<data<int>> int_data;
+        std::vector<data<float>> float_data;
+        std::vector<data<long>> long_data;
+        std::vector<data<double>> double_data;
+        std::vector<data<Dbstr>> str_data;
+        std::vector<data<char>> char_data;
     }
 };
 
