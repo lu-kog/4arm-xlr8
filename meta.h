@@ -1,6 +1,7 @@
+#pragma once
 
-#ifndef meta_h
-#define meta_h 09
+#ifndef _META_H
+#define _META_H 0
 
 
 
@@ -65,7 +66,7 @@ struct column_obj
         std::vector<data<double>> double_data;
         std::vector<data<Dbstr>> str_data;
         std::vector<data<char>> char_data;
-    }
+    };
 };
 
 
