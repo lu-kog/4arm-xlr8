@@ -44,6 +44,18 @@ void writeRecords(const std::string &filename, const char *buffer, long long siz
     }
 }
 
+
+
+
+int get_size(std::string file_name){
+    std::ifstream in_file(file_name, std::ios::binary);
+   in_file.seekg(0, std::ios::end);
+   int file_size = in_file.tellg();
+   return file_size;
+}
+
+
+
 int main(int argc, char const *argv[])
 {
     long long oneGB = 1024 * 1024 * 1024 * 30.0;
