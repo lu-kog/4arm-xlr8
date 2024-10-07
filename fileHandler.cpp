@@ -32,7 +32,7 @@ void writeRecords(const std::string &filename, const char *buffer, long long siz
 {
     try
     {
-        std::ofstream outFile(filename, std::ios::binary);
+        std::ofstream outFile(filename, std::ios::binary | std::ios::in | std::ios::out);
         outFile.exceptions(std::ofstream::failbit | std::ofstream::badbit);
         outFile.seekp(offSet, std::ios::beg);
         outFile.write(buffer, size);
@@ -58,16 +58,11 @@ int get_size(std::string file_name){
 
 int main(int argc, char const *argv[])
 {
-    long long oneGB = 1024 * 1024 * 1024 * 30.0;
-    char *buffer = new char[oneGB];
-    std::cout << (int *) buffer << std::endl;
-
-    for (size_t i = 0; i < oneGB; i++)
-    {
-        buffer[i] = 'i';
-    }
     
-    // writeRecords("/home/gokul-zstk330/Downloads/jith.bin",buffer, oneGB, 0);
+    char buffer[] = "Krisi";
+    std::cout << (int *) buffer << std::endl;
+    
+    writeRecords("/home/gokul-zstk330/Downloads/jith.bin",buffer, 5, 0);
 
     return 0;
 }
