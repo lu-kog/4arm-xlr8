@@ -35,15 +35,6 @@ struct data{
 
 
 
-struct column_meta
-{
-    int total_records;
-    int data_type;
-    int no_block;
-};
-
-
-
 template <typename dt>
 struct block_meta
 {
@@ -53,12 +44,35 @@ struct block_meta
     dt sum;
 };
 
+template <typename T>
+struct block_obj
+{
+    block_meta<T> meta;
 
-// template <typename td>
+    union data_union{
+        std::vector<data<int>> *int_data;
+        std::vector<data<float>> *float_data;
+        std::vector<data<long>> *long_data;
+        std::vector<data<double>> *double_data;
+        std::vector<data<Dbstr>> *str_data;
+        std::vector<data<char>> *char_data;
+    } all_data;
+
+};
+
+
+
+struct column_meta
+{
+    int total_records;
+    int data_type;
+    int no_block;
+};
+
+
 struct column_obj
 {
     column_meta meta;
-    // data<dt>* all_data;
 
     union data_union{
         std::vector<data<int>> *int_data;

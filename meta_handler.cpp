@@ -3,8 +3,13 @@
 #ifndef _META_HANDLER
 #define _META_HANDLER 0
 
+
+#include <vector>
+#include "meta.h"
+
 /*
-Get data from dumped file
+Get vector of Column objects.
+Each object have bunch of data as union of vector * 
 create a block of 100 values
 calculate meta data
 create block object and push to persistence
@@ -19,14 +24,18 @@ Handle cases:
 
 #define records_limit 100
 
-void init_meta(string dump_file){
+void init_meta(, ){
     /*
     I need data type
-    dumped column meta size (column meta)
     */
 
     column_meta meta_to_process;
-    
+
+
+}
+
+
+void dump_data(std::vector<column_obj> data){
 
 }
 
