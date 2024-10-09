@@ -6,11 +6,11 @@
 
 
 #define DBINT 1
-#define DBFLOAT 2
+#define DBCHAR 2
 #define DBLONG 3
 #define DBDOUBLE 4
 #define DBSTRING 5
-#define DBCHAR 6
+#define DBFLOAT 6
 
 #include <string>
 #include <vector>
@@ -54,19 +54,22 @@ struct block_meta
 };
 
 
-template <typename dt>
+// template <typename td>
 struct column_obj
 {
-    block_meta<dt> meta;
+    column_meta meta;
     // data<dt>* all_data;
-    union all_data{
-        std::vector<data<int>> int_data;
-        std::vector<data<float>> float_data;
-        std::vector<data<long>> long_data;
-        std::vector<data<double>> double_data;
-        std::vector<data<Dbstr>> str_data;
-        std::vector<data<char>> char_data;
-    };
+
+    union data_union{
+        std::vector<data<int>> *int_data;
+        std::vector<data<float>> *float_data;
+        std::vector<data<long>> *long_data;
+        std::vector<data<double>> *double_data;
+        std::vector<data<Dbstr>> *str_data;
+        std::vector<data<char>> *char_data;
+    } all_data;
+
+
 };
 
 

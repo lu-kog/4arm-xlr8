@@ -32,7 +32,24 @@ void writeRecords(const std::string &filename, const char *buffer, long long siz
 {
     try
     {
-        std::ofstream outFile(filename, std::ios::binary | std::ios::in | std::ios::out);
+        
+        std::ofstream outFile;
+        
+        // Check if the file exists using std::filesystem
+        if (std::filesystem::exists(filename))
+        {
+            // If the file exists, open it with both std::ios::in and std::ios::out (read and write)
+            outFile.open(filename, std::ios::binary | std::ios::in | std::ios::out);
+        }
+        else
+        {
+            // If the file doesn't exist, open it with std::ios::out to create it
+            outFile.open(filename, std::ios::binary | std::ios::out);
+        }
+
+
+
+
         outFile.exceptions(std::ofstream::failbit | std::ofstream::badbit);
         outFile.seekp(offSet, std::ios::beg);
         outFile.write(buffer, size);
