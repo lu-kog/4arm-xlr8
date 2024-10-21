@@ -49,14 +49,7 @@ struct block_obj
 {
     block_meta<T> meta;
 
-    union data_union{
-        std::vector<data<int>> *int_data;
-        std::vector<data<float>> *float_data;
-        std::vector<data<long>> *long_data;
-        std::vector<data<double>> *double_data;
-        std::vector<data<Dbstr>> *str_data;
-        std::vector<data<char>> *char_data;
-    } all_data;
+    std::vector<data<T>> all_data;
 
 };
 
@@ -91,9 +84,7 @@ struct column_obj
 struct schema_meta{
     int number_of_columns;
     int* data_type;
-    // str* fields; 
     std::pair <int,char *> *fields;
-    
 };
 
 
