@@ -6,7 +6,9 @@
 
 #include <vector>
 #include "meta.h"
-
+#include <string>
+#include "fileHandler.cpp"
+#include "cred.cpp"
 /*
 Get vector of Column objects.
 Each object have bunch of data as union of vector * 
@@ -19,30 +21,18 @@ Handle cases:
 
 */
 
-#include "meta.h"
-#include<iostream>
-
-#define records_limit 100
-
-void init_meta(, ){
-    /*
-    I need data type
-    */
-
-    column_meta meta_to_process;
+column_meta * get_column_meta(std::string table_name, std::string column_name ){
+    int size = sizeof(column_meta);
+    column_meta *col_met = new column_meta;
 
 
-}
+    std::string relative_path = table_name +"/"+column_name;
+
+    readBinaryFile(get_path()+relative_path ,(char *) col_met , size, 0);
 
 
-void dump_data(std::vector<column_obj> data){
+    return column_meta;
 
-}
-
-int main(int argc, char const *argv[])
-{
-    std::cout << block_meta_size << std::endl;
-    return 0;
 }
 
 

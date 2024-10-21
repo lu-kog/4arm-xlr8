@@ -33,6 +33,11 @@ void get_home_folder(){
     path += "/";
 }
 
+std::string get_path(){
+    return path;
+}
+
+
 void create_table(std::string table_name,std::vector <std::string> &columns_name, std::vector <int> &columns_data_type){
 
     if(!create_folder(table_name)){
@@ -261,15 +266,6 @@ schema_meta* read_schema(std::string table_name){
 
     
      table_schema->fields = column_names;
-
-    
-
-
-
-
-
-
-
 
     return table_schema;
 }

@@ -1,6 +1,7 @@
 #include <vector>
 #include "meta.h"
 #include <string>
+#include <iostream>
 
 
 
@@ -63,6 +64,8 @@ std::vector<column_obj> &type_casting(std::vector <std::string> data_as_string, 
     // data = 5 --     
     if((schema_for_table.number_of_columns%number_of_data) != 0){
         table_data.resize(0);
+        std::cout<<"No data"<<std::endl;
+
         return table_data;   //throw exepction here
     } 
     else{
@@ -106,6 +109,8 @@ std::vector<column_obj> &type_casting(std::vector <std::string> data_as_string, 
         
          }
     }
+
+    std::cout<<table_data.size()<<std::endl;
 
     return table_data;
 }    
