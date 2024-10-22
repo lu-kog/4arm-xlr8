@@ -14,6 +14,7 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 
 struct Dbstr{
@@ -42,6 +43,18 @@ struct block_meta
     dt min;
     dt max; 
     dt sum;
+
+    block_meta(){
+        count = 0;
+        sum = dt(); 
+        if (typeid(dt) != typeid(Dbstr))
+        {
+            min = std::numeric_limits<dt>::max();
+            max = std::numeric_limits<dt>::lowest();
+        }
+        
+    }
+
 };
 
 template <typename T>
