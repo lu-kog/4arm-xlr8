@@ -64,6 +64,8 @@ void processColumnData(std::vector<data<T>> &newRecords, std::string& table_name
     std::vector<block_obj> new_blocks;
     
     auto it = newRecords.begin();
+
+    bool is_string = typeid(dt) == typeid(Dbstr);
     
     // If unfinished block
     if (col_meta.total_records % records_limit != 0) {
@@ -73,7 +75,7 @@ void processColumnData(std::vector<data<T>> &newRecords, std::string& table_name
             lastBlock->all_data.push_back(*it++);
 
             // Meta updation.. skip if it string
-            if (typeid(dt) != typeid(Dbstr))
+            if (!is_string)
             {
                 if (it->data > lastBlock->meta.max)
                 {
@@ -87,7 +89,7 @@ void processColumnData(std::vector<data<T>> &newRecords, std::string& table_name
             
         }
 
-        // update meta
+        // update last block meta
         lastBlock->meta.count = lastBlock->all_data.size();
         
         new_blocks.push_back(*lastBlock);
@@ -101,8 +103,8 @@ void processColumnData(std::vector<data<T>> &newRecords, std::string& table_name
 
             newBlock.all_data.push_back(*it++);
             
-            // Meta updation.. skip if it string
-            if (typeid(dt) != typeid(Dbstr)){
+            // Meta calculation.. skip if it string
+            if (!is_string){
                 if (it->data > newBlock.meta.max)
                 {
                     newBlock.meta.max = it->data;
@@ -125,14 +127,14 @@ void processColumnData(std::vector<data<T>> &newRecords, std::string& table_name
 
     /*
         overwrite column_meta
-        overwrite last block
-        dump newBlocks
+        overwrite last block & dump newBlocks
         clear memory()
     */
     
    write_column_meta(table_name, col_name, col_meta);
    dump_new_records(new_blocks, table_name, col_name, file_offset);
 
+    delete col_meta;
 
 }
 
@@ -158,6 +160,7 @@ void dump_new_records(std::vector<block_obj<T>> & new_blocks, std::string &table
      
     writeRecords(fileName,buffer, buffer_size, file_offset);
     
+    delete buffer;
 }
 
 
