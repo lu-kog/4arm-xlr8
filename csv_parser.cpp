@@ -68,22 +68,30 @@ std::vector<std::string> * parseCSV(std::ifstream &file) {
     
 }
 
+
+
+
+
+#if 0
 int main() {
     std::ifstream csvFile;
-    csvFile.open("/home/gokul-zstk330/Downloads/temp.csv");
+    csvFile.open("/home/ajith-zstk355/temp.csv");
     std::vector<std::string> * parsed = parseCSV(csvFile);
 
     if (parsed != nullptr)
     {
         for (int i =0; i < parsed->size(); i++)
         {
-            std::cout << (*parsed)[i] << std::endl;
+            std::cout << i << "\t "<< (*parsed)[i] << std::endl;
         }
         
     }
+
+
     
     return 0;
 }
+#endif
 
 
 #endif

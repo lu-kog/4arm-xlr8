@@ -3,6 +3,9 @@
 
 #include <iostream>
 #include <fstream>
+#include <filesystem>
+#include "meta.h"
+
 
 
 void readBinaryFile(const std::string &filename, char *buffer, long long size, int offset)
@@ -32,7 +35,9 @@ void writeRecords(const std::string &filename, const char *buffer, long long siz
 {
     try
     {
-        
+        // std::ofstream outFile(filename, std::ios::binary | std::ios::in | std::ios::out);
+
+
         std::ofstream outFile;
         
         // Check if the file exists using std::filesystem
@@ -52,6 +57,8 @@ void writeRecords(const std::string &filename, const char *buffer, long long siz
 
         outFile.exceptions(std::ofstream::failbit | std::ofstream::badbit);
         outFile.seekp(offSet, std::ios::beg);
+
+        
         outFile.write(buffer, size);
         outFile.close();
     }
@@ -72,16 +79,10 @@ int get_size(std::string file_name){
 }
 
 
+// std::ofstream outFile()
 
-int main(int argc, char const *argv[])
-{
-    
-    char buffer[] = "Krisi";
-    std::cout << (int *) buffer << std::endl;
-    
-    writeRecords("/home/gokul-zstk330/Downloads/jith.bin",buffer, 5, 0);
 
-    return 0;
-}
+
+
 
 #endif

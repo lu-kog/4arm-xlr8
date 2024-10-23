@@ -1,3 +1,6 @@
+#ifndef _cred_h
+#define _cred_h 1
+
 #include "meta.h" 
 #include "cred.h"
 #include "fileHandler.cpp"
@@ -16,9 +19,6 @@ void write_meta(std::string path, column_meta meta, block_meta <dt> bloc_m, int 
 
 static std::string path;
 
-
-
-
 void get_home_folder(){
     path = std::getenv("HOME");
 
@@ -33,10 +33,10 @@ void get_home_folder(){
     path += "/";
 }
 
+
 std::string get_path(){
     return path;
 }
-
 
 void create_table(std::string table_name,std::vector <std::string> &columns_name, std::vector <int> &columns_data_type){
 
@@ -92,7 +92,7 @@ void create_table(std::string table_name,std::vector <std::string> &columns_name
 
 
 
-    writeRecords(path+table_name+"/"+table_name,buffer,total_buffer_size,0);
+    writeRecords(path+table_name+"/"+table_name + ".schema",buffer,total_buffer_size,0);
 
 #if 1
     for (size_t i = 0; i < new_table.number_of_columns; i++)
@@ -103,7 +103,7 @@ void create_table(std::string table_name,std::vector <std::string> &columns_name
         case DBINT:{
             std::cout<<"Int"<<"\n";
             column_meta meta{0,new_table.data_type[i],0};
-            block_meta<int> block_meta_for_int{0,0,0,0};
+            block_meta<int> block_meta_for_int;
 
             write_meta(path+table_name+"/"+columns_name[i], meta, block_meta_for_int,0);
             
@@ -114,11 +114,9 @@ void create_table(std::string table_name,std::vector <std::string> &columns_name
             std::cout<<"Char"<<"\n";
 
             column_meta meta{0,new_table.data_type[i],0};
-            block_meta<char> block_meta_for_char{0,0,0,0};
+            block_meta<char> block_meta_for_char;
 
             write_meta(path+table_name+"/"+columns_name[i], meta, block_meta_for_char,0);
-
-            
             break;
             }
         case DBLONG:{
@@ -127,7 +125,7 @@ void create_table(std::string table_name,std::vector <std::string> &columns_name
 
 
             column_meta meta{0,new_table.data_type[i],0};
-            block_meta<long> block_meta_for_long{0,0,0,0};
+            block_meta<long> block_meta_for_long;
 
             write_meta(path+table_name+"/"+columns_name[i], meta, block_meta_for_long,0);
             break;
@@ -137,7 +135,7 @@ void create_table(std::string table_name,std::vector <std::string> &columns_name
 
 
             column_meta meta{0,new_table.data_type[i],0};
-            block_meta<double> block_meta_for_double{0,0,0,0};
+            block_meta<double> block_meta_for_double;
 
             write_meta(path+table_name+"/"+columns_name[i], meta, block_meta_for_double,0);
             break;
@@ -148,9 +146,9 @@ void create_table(std::string table_name,std::vector <std::string> &columns_name
 
             column_meta meta{0,new_table.data_type[i],0};
 
-            Dbstr temp {-1,-1,-1};
+           
 
-            block_meta<Dbstr> block_meta_for_string{0,temp,temp,temp};
+            block_meta<Dbstr> block_meta_for_string;
 
             write_meta(path+table_name+"/"+columns_name[i], meta, block_meta_for_string,0);
             break;
@@ -160,7 +158,7 @@ void create_table(std::string table_name,std::vector <std::string> &columns_name
 
 
             column_meta meta{0,new_table.data_type[i],0};
-            block_meta<int> block_meta_for_float{0,0,0,0};
+            block_meta<int> block_meta_for_float;
 
             write_meta(path+table_name+"/"+columns_name[i], meta, block_meta_for_float,0);
             break;
@@ -186,21 +184,16 @@ void create_table(std::string table_name,std::vector <std::string> &columns_name
 template <typename dt>
 void write_meta(std::string path, column_meta meta, block_meta <dt> bloc_m, int offset ){
     writeRecords(path, (char *) &meta, sizeof(meta), offset);
+    // char * buffer = malloc()
 
-    offset += sizeof(meta);
-
-
-    std::cout<<sizeof(bloc_m)<<std::endl;
-    std::cout<<sizeof(meta)<<std::endl;
-
-    writeRecords(path, (char *) &bloc_m, sizeof(bloc_m), offset);
+    // writeRecords(path, (char *) &bloc_m, sizeof(bloc_m), offset);
 }
 
 
 
 schema_meta* read_schema(std::string table_name){
 
-    std::string f_name = path+table_name+"/"+table_name;
+    std::string f_name = path+table_name+"/"+table_name + ".schema";
 
 
     int copied_buffer = 0;
@@ -231,11 +224,8 @@ schema_meta* read_schema(std::string table_name){
     table_schema->data_type = column_dt;
 
 
-    copied_buffer += (table_schema->number_of_columns*4); 
-
+    copied_buffer += (table_schema->number_of_columns*4);
     //parsing the column names
-
-
     std::pair <int, char*> *column_names = new std::pair<int,char*> [table_schema->number_of_columns];
 
 
@@ -261,11 +251,7 @@ schema_meta* read_schema(std::string table_name){
         copied_buffer += (*temp);      
 
     }
-    
-
-
-    
-     table_schema->fields = column_names;
+    table_schema->fields = column_names;
 
     return table_schema;
 }
@@ -282,3 +268,4 @@ bool create_folder(std::string name){
 }
 
 
+#endif

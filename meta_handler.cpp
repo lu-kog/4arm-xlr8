@@ -31,15 +31,15 @@ column_meta * get_column_meta(std::string table_name, std::string column_name ){
     readBinaryFile(get_path()+relative_path ,(char *) col_met , size, 0);
 
 
-    return column_meta;
+    return col_met;
 
 }
 
 
-void write_column_meta(std::string table_name, std::string column_name , column_meta col_meta_to_write){
+void write_column_meta(std::string table_name, std::string column_name , column_meta &col_meta_to_write){
     std::string relative_path = table_name +"/"+column_name;
 
-    writeRecords(get_path()+relative_path, (char *) col_meta_to_write, sizeof(col_meta_to_write) , 0);
+    writeRecords(get_path()+relative_path, (char *) &col_meta_to_write, sizeof(col_meta_to_write) , 0);
 }
 
 

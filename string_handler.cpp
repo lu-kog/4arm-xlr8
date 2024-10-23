@@ -13,38 +13,32 @@
 #define FILE_LIMIT 1024*1024*10 
 
 
-void closeFile(std::ofstream &outFile){
-    std::ofstream *out_ptr = &outFile;
-    delete out_ptr;
-
-}
-
-std::ofstream & get_file_to_write(int &file_no, std::string table_name){
+void get_file_to_write(int &file_no, std::string table_name , std::ofstream &outFile){
 
     const std::string file_name =  get_path()+table_name  + "/string_" + std::to_string(file_no);
-    std::ofstream * outFile = new std::ofstream;
+    // std::ofstream * outFile = new std::ofstream;
         // Check if the file exists using std::filesystem
     if (std::filesystem::exists(file_name))
     {
         // If the file exists, open it with both std::ios::in and std::ios::out (read and write)
-        outFile->open(file_name, std::ios::binary | std::ios::in | std::ios::out);
+        outFile.open(file_name, std::ios::binary | std::ios::in | std::ios::out);
     }
     else
     {
         // If the file doesn't exist, open it with std::ios::out to create it
-        outFile->open(file_name, std::ios::binary | std::ios::out);
+        outFile.open(file_name, std::ios::binary | std::ios::out);
     }
     int f_size = get_size(file_name );
 
 
     if (f_size > FILE_LIMIT)
     {
-        closeFile(*outFile);
+        outFile.close();
         file_no += 1;
-        return get_file_to_write(file_no, table_name);
+        get_file_to_write(file_no, table_name,outFile);
     }
     
-    return *outFile;
+    // return *outFile;
 
 
 }
@@ -64,6 +58,23 @@ Dbstr str_file_writer(std::ofstream &outFile, std::string str,const int file_no)
     outFile.write(str.data(), str_struct.size);
 
     return str_struct;
+}
+
+
+void string_write_file_size_check(int &file_no, std::string table_name, std::ofstream &str_file_obj){
+    const std::string file_name =  get_path()+table_name  + "/string_" + std::to_string(file_no);
+
+
+    int f_size = get_size(file_name);
+
+
+    if (f_size > FILE_LIMIT)
+    {
+        str_file_obj.close();
+        file_no += 1;
+        get_file_to_write(file_no, table_name, str_file_obj);
+    }
+    
 }
 
 

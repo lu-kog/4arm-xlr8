@@ -15,12 +15,22 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <limits>
 
 
 struct Dbstr{
     int file;
     int offset_start;
     int size;
+    bool operator>(const Dbstr& other) const {
+        return false;
+    }
+    bool operator<(const Dbstr& other) const {
+        return false;
+    }
+    bool operator==(const Dbstr& other) const {
+        return false;
+    }
 };
 
 
@@ -29,8 +39,8 @@ struct Dbstr{
 template <typename dt>
 struct data{
     unsigned int row_id;
-    dt data;
     bool is_deleated;
+    dt data;
 };
 
 
