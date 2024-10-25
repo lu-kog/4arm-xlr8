@@ -122,7 +122,8 @@ void processColumnData(std::vector<data<T>> &newRecords, std::string& table_name
                 if (it->data > block.meta.max)
                 {
                     block.meta.max = it->data;
-                }else if (it->data < block.meta.min)
+                }
+                if (it->data < block.meta.min)
                 {
                     block.meta.min = it->data;
                 }
