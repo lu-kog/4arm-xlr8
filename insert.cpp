@@ -130,6 +130,8 @@ void processColumnData(std::vector<data<T>> &newRecords, std::string& table_name
             
         }
 
+        block.meta.count = block.all_data.size();
+
         new_blocks.push_back(block);
 
     }
