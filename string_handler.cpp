@@ -13,6 +13,15 @@
 #define FILE_LIMIT 1024*1024*10 
 
 
+
+struct{
+    int file_no_for_str = 0;
+    std::ifstream file_for_str;
+}file_to_make_non_rep_string;
+
+
+
+
 void get_file_to_write(int &file_no, std::string table_name , std::ofstream &outFile){
 
     const std::string file_name =  get_path()+table_name  + "/string_" + std::to_string(file_no);
@@ -42,6 +51,8 @@ void get_file_to_write(int &file_no, std::string table_name , std::ofstream &out
 
 
 }
+
+
 
 Dbstr str_file_writer(std::ofstream &outFile, std::string str,const int file_no){
     
@@ -79,6 +90,48 @@ void string_write_file_size_check(int &file_no, std::string table_name, std::ofs
 
 
 
+
+
+std::string str_file_reader(const std::string& table_name, const Dbstr& str_info) {
+
+    int file_no = str_info.file;
+
+    const std::string file_name = get_path() + table_name + "/string_" + std::to_string(file_no);
+
+
+
+    std::ifstream &inFile = file_to_make_non_rep_string.file_for_str;
+
+    if (file_to_make_non_rep_string.file_no_for_str != file_no)
+    {
+        inFile.open(file_name, std::ios::binary);
+        if (!inFile) {
+            throw std::runtime_error("Failed to open file: " + file_name);
+        }
+
+        file_to_make_non_rep_string.file_no_for_str = file_no;
+    }
+    
+
+    // Seek to the offset where the string starts
+    inFile.seekg(str_info.offset_start, std::ios::beg);
+
+    // Read the string data
+    std::string str_data(str_info.size, '\0'); // Create a string of the appropriate size
+    inFile.read(&str_data[0], str_info.size); // Read data into the string
+
+    // Optionally check for read errors
+    if (!inFile) {
+        throw std::runtime_error("Failed to read data from file: " + file_name);
+    }
+
+    return str_data; // Return the read string
+}
+
+
+
+
+
 #if 0
 
 
@@ -87,6 +140,10 @@ int main(int argc, char const *argv[])
 {
 
     get_home_folder();
+
+
+
+#if 0
 
     int file_no = 1;
     
@@ -100,6 +157,21 @@ int main(int argc, char const *argv[])
 
     std::cout <<"file: " << str.file << "  offset: "<<str.offset_start <<"   size: "<< str.size << std::endl;
 
+#endif
+
+
+#if 1
+    Dbstr str_info;
+
+    str_info.file = 1;
+
+    str_info.offset_start = 0;
+
+    str_info.size = 5;
+
+    std::cout << str_file_reader("kcc",str_info) << std::endl;
+
+#endif  
     
 
 

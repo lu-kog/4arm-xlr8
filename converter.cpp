@@ -7,6 +7,7 @@
 #include <string>
 #include <iostream>
 #include "string_handler.cpp"
+#include "meta_handler.cpp"
 #include <fstream>
 
 void create_vec(column_obj &column)
@@ -49,6 +50,66 @@ void create_vec(column_obj &column)
     }
 }
 
+
+
+void delete_vec(column_obj &column)
+{
+    switch (column.meta.data_type)
+    {
+    case DBINT:
+    {
+        delete column.all_data.int_data;
+        break;
+    }
+    case DBCHAR:
+    {
+        delete column.all_data.char_data;
+
+        break;
+    }
+    case DBDOUBLE:
+    {
+        delete column.all_data.double_data;
+
+        break;
+    }
+    case DBSTRING:
+    {
+        delete column.all_data.str_data;
+        break;
+    }
+    case DBFLOAT:
+    {
+        delete column.all_data.float_data;
+        break;
+    }
+    case DBLONG:
+    {
+        delete column.all_data.long_data;
+        break;
+    }
+    }
+}
+
+
+void initilaize_column_objs(const schema_meta &schema, std::vector<column_obj> &table_data){
+    for (size_t i = 0; i < schema.number_of_columns; i++)
+    {
+        column_obj temp;
+
+        temp.meta.data_type = schema.data_type[i];
+        temp.meta.no_block = 0;
+
+        temp.meta.total_records = (data_as_string.size() / schema.number_of_columns);
+
+        create_vec(temp);
+        table_data.push_back(temp);
+    }
+}
+
+
+
+
 /*
 type_casting methods gets string as data from csv like
 
@@ -57,23 +118,18 @@ type_casting methods gets string as data from csv like
 
 form the table already created using `schema_meta`
 */
-std::vector<column_obj> &type_casting(std::vector<std::string> &data_as_string, schema_meta &schema_for_table, std::vector<column_obj> &table_data, std::string table_name)
+
+std::vector<column_obj> &type_casting(std::vector<std::string> &data_as_string, schema_meta &schema_for_table, std::vector<column_obj> &table_data, const std::string &table_name)
 {
 
     int number_of_data = data_as_string.size();
 
-    for (size_t i = 0; i < schema_for_table.number_of_columns; i++)
-    {
-        column_obj temp;
 
-        temp.meta.data_type = schema_for_table.data_type[i];
-        temp.meta.no_block = 0;
+    // column_meta * column_meta = 
 
-        temp.meta.total_records = (data_as_string.size() / schema_for_table.number_of_columns);
 
-        create_vec(temp);
-        table_data.push_back(temp);
-    }
+    initilaize_column_objs(schema_for_table,table_data);
+
 
     // when the number of columns and given data doesn't match
     //  no column = 3
