@@ -1,5 +1,6 @@
 #include<vector>
 #include<string>
+#include <memory>
 
 struct SelectNode {
     std::vector<std::string> columns;
@@ -17,23 +18,17 @@ struct FilterNode {
     std::string value;
     ConditionType conditionType;
 
-    FilterNode *left;
-    FilterNode *right; 
+    std::unique_ptr<FilterNode> left;
+    std::unique_ptr<FilterNode> right;
 
-    ConditionNode(const std::string &col, const std::string &val, ConditionType cond){
-        columnName = col;
-        value = val;
-        conditionType = cond;
-        left = nullptr;
-        right = nullptr;
-    }
-    
-    // For conditions with OR, AND
-    ConditionNode(ConditionNode *lhs, ConditionNode *rhs, ConditionType cond){
-        this.left = lhs;
-        this.right = rhs;
-        conditionType = cond;
-    }
+    // Constructor for leaf nodes
+    FilterNode(const std::string &col, const std::string &val, ConditionType cond)
+        : columnName(col), value(val), conditionType(cond), left(nullptr), right(nullptr) {}
+
+    // Constructor for OR, AND conditions with unique_ptrs
+    FilterNode(std::unique_ptr<FilterNode> lhs, std::unique_ptr<FilterNode> rhs, ConditionType cond)
+        : conditionType(cond), left(std::move(lhs)), right(std::move(rhs)) {}
+
 };
 
 
