@@ -5,9 +5,6 @@
 struct SelectNode {
     std::vector<std::string> columns;
     std::string tableName;
-
-    SelectNode(const std::string &table, const std::vector<std::string> &cols)
-        : tableName(table), columns(cols) {}
 };
 
 enum ConditionType { EQUALS, NOT_EQUALS, LESS_THAN, GREATER_THAN, OR, AND };
@@ -17,22 +14,15 @@ struct FilterNode {
     std::string columnName;
     std::string value;
     ConditionType conditionType;
-
     std::unique_ptr<FilterNode> left;
     std::unique_ptr<FilterNode> right;
 
-    // Constructor for leaf nodes
-    FilterNode(const std::string &col, const std::string &val, ConditionType cond)
+    FilterNode(const std::string& col, const std::string& val, ConditionType cond)
         : columnName(col), value(val), conditionType(cond), left(nullptr), right(nullptr) {}
-
-    // Constructor for OR, AND conditions with unique_ptrs
-    FilterNode(std::unique_ptr<FilterNode> lhs, std::unique_ptr<FilterNode> rhs, ConditionType cond)
-        : conditionType(cond), left(std::move(lhs)), right(std::move(rhs)) {}
-
 };
 
 
-enum SortOrder { ASC, DESC };
+enum SortOrder { ASC=1, DESC };
 
 struct SortNode {
     std::string columnName;
@@ -41,6 +31,10 @@ struct SortNode {
     SortNode(const std::string &col, SortOrder order = ASC){
         columnName = col;
         sortOrder = order;
+    }
+
+    SortNode(){
+        sortOrder = 0; // default asc?? // On which column??
     }
 
 };
@@ -52,4 +46,14 @@ struct LimitNode
     LimitNode(int limit_){
         limit = limit_;
     }
+
+    LimitNode() : limit(-1){};
+};
+
+
+struct QueryNode {
+    SelectNode selectNode;
+    std::unique_ptr<FilterNode> filterNode;
+    std::unique_ptr<SortNode> sortNode;
+    std::unique_ptr<LimitNode> limitNode;
 };
