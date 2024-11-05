@@ -17,12 +17,23 @@ struct FilterNode {
     std::unique_ptr<FilterNode> left;
     std::unique_ptr<FilterNode> right;
 
+    // Constructor for simple conditions
     FilterNode(const std::string& col, const std::string& val, ConditionType cond)
         : columnName(col), value(val), conditionType(cond), left(nullptr), right(nullptr) {}
+
+    // Constructor for compound conditions
+    FilterNode(std::unique_ptr<FilterNode> lhs, std::unique_ptr<FilterNode> rhs, ConditionType cond)
+        : left(std::move(lhs)), right(std::move(rhs)), conditionType(cond) {}
+
+    void print(){
+        if (left) left->print();
+        std::cout << "---\nCol Name: " << columnName << "\n" << "Value: " << value << "\n" << "Condition: " << conditionType << "\n---\n";
+        if (right) right->print();
+    }
 };
 
 
-enum SortOrder { ASC=1, DESC };
+enum SortOrder { ASC, DESC };
 
 struct SortNode {
     std::string columnName;
@@ -33,10 +44,10 @@ struct SortNode {
         sortOrder = order;
     }
 
-    SortNode(){
-        sortOrder = 0; // default asc?? // On which column??
+    void print(){
+        std::cout << "Sort Column:" << columnName << std::endl;
+        std::cout << "Order: " << sortOrder << std::endl;
     }
-
 };
 
 
@@ -48,6 +59,10 @@ struct LimitNode
     }
 
     LimitNode() : limit(-1){};
+
+    void print(){
+        std::cout << "Limits: " << limit << std::endl;
+    }
 };
 
 
