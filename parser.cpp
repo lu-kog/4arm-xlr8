@@ -74,8 +74,6 @@ std::unique_ptr<FilterNode> parseConditions(const std::vector<std::string>& toke
 }
 
 
-
-
 void parseWhere(const std::vector<std::string>& tokens, std::unique_ptr<FilterNode>& filterNode, std::vector<std::string>::iterator start) {
     filterNode = parseConditions(tokens, start);
 }
@@ -137,8 +135,6 @@ std::vector<std::string> tokenize(const std::string& qry) {
 
     return tokens;
 }
-
-
 
 QueryNode parseQuery(const std::string& query) {
     QueryNode queryNode;
