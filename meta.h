@@ -40,7 +40,7 @@ template <typename dt>
 struct data{
     unsigned int row_id;
     bool is_deleated;
-    dt data;
+    dt data;  //Rename data as dadum and add null bit and constructor
 };
 
 
