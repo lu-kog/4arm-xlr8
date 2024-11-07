@@ -11,10 +11,38 @@
 #include <fstream>
 #include <stdexcept> 
 
+
+
+
+std::string get_file_path (const std::string& table_name,  const std::string &col_name){
+
+    std::string path = get_path() + table_name + "/"+col_name;
+
+
+    return path;
+
+
+}
+
+
+
+
 template <typename T>
 data<T> * get_block_data(const std::string &table_name, const std::string &col_name, const int block_no , const block_meta<T> &blk_meta){
 
 
+
+
+    std::ifstream file(get_file_path(table_name,col_name));
+     
+    data<T> * block_data = get_block_data(file,block_no,blk_meta);
+
+    file.close();
+
+
+    return block_data;
+
+#if 0
 
     if (block_no <= 0) {
         throw std::invalid_argument("block_no must be greater than 0");
@@ -26,8 +54,33 @@ data<T> * get_block_data(const std::string &table_name, const std::string &col_n
     readBinaryFile(get_path() + table_name + "/"+col_name, (char *) all_data_frm_blk,  (blk_meta.count * sizeof(data<T> )),offset);
 
     return all_data_frm_blk;
+#endif
+} 
+
+
+
+
+
+
+template <typename T>
+data<T> * get_block_data(std::ifstream &file, const int block_no , const block_meta<T> &blk_meta){
+
+
+
+    if (block_no <= 0) {
+        throw std::invalid_argument("block_no must be greater than 0");
+    }    
+    int offset = sizeof(column_meta) + ((sizeof(block_meta<T>) + (sizeof(data<T>) * 100))  * (block_no-1))   + sizeof(block_meta<T>);
+
+    data<T> * all_data_frm_blk = new data<T>[blk_meta.count];
+
+    readBinaryFile((char *) all_data_frm_blk,  (blk_meta.count * sizeof(data<T> )),offset,file);
+
+    return all_data_frm_blk;
 
 } 
+
+
 
 
 //for getting block meta pointer and count of block meta
@@ -92,7 +145,7 @@ int main(int argc, char const *argv[])
 
         for (size_t j = 0; j < all_block_meta.first[i].count ; j++)
         {
-            std::cout <<  str_file_reader(table_name, all_data[j].data) << std::endl;
+            std::cout <<   all_data[j].row_id << std::endl;
         }
         
 
