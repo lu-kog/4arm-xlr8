@@ -26,42 +26,6 @@ std::string get_file_path (const std::string& table_name,  const std::string &co
 
 
 
-
-template <typename T>
-data<T> * get_block_data(const std::string &table_name, const std::string &col_name, const int block_no , const block_meta<T> &blk_meta){
-
-
-
-
-    std::ifstream file(get_file_path(table_name,col_name));
-     
-    data<T> * block_data = get_block_data(file,block_no,blk_meta);
-
-    file.close();
-
-
-    return block_data;
-
-#if 0
-
-    if (block_no <= 0) {
-        throw std::invalid_argument("block_no must be greater than 0");
-    }    
-    int offset = sizeof(column_meta) + ((sizeof(block_meta<T>) + (sizeof(data<T>) * 100))  * (block_no-1))   + sizeof(block_meta<T>);
-
-    data<T> * all_data_frm_blk = new data<T>[blk_meta.count];
-
-    readBinaryFile(get_path() + table_name + "/"+col_name, (char *) all_data_frm_blk,  (blk_meta.count * sizeof(data<T> )),offset);
-
-    return all_data_frm_blk;
-#endif
-} 
-
-
-
-
-
-
 template <typename T>
 data<T> * get_block_data(std::ifstream &file, const int block_no , const block_meta<T> &blk_meta){
 
@@ -79,6 +43,55 @@ data<T> * get_block_data(std::ifstream &file, const int block_no , const block_m
     return all_data_frm_blk;
 
 } 
+
+
+
+
+template <typename T>
+data<T> * get_block_data(const std::string &table_name, const std::string &col_name, const int block_no , const block_meta<T> &blk_meta){
+
+
+
+
+    std::ifstream file(get_file_path(table_name,col_name));
+     
+    data<T> * block_data = get_block_data(file,block_no,blk_meta);
+
+    file.close();
+
+
+    return block_data;
+
+} 
+
+
+
+
+template <typename T>
+std::vector<data<T>> * get_block_data(std::string table_name, std::string col_name, const std::vector<int> &block_nos , const std::pair<block_meta<T> *, int> & blk_meta){
+    std::ifstream file(get_file_path(table_name,col_name));
+     
+    std::vector<data<T>> all_data = new std::vector<data<T>>;
+
+    for (int blk_no : block_nos)
+    {
+
+        block_meta<T> & single_blk_meta = blk_meta[blk_no];
+
+        data<T> * block_data = get_block_data(file,blk_no,single_blk_meta);
+
+        all_data.insert(all_data.end(),block_data,block_data+single_blk_meta.count);
+
+
+        delete block_data[];
+        
+    }
+    
+
+    file.close();
+
+    return all_data;
+}
 
 
 
