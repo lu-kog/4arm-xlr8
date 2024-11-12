@@ -1,6 +1,12 @@
 #include<vector>
 #include<string>
 #include <memory>
+#include <meta.h>
+#include <set>
+#include<unordered_set>
+#include<variant>
+
+typedef std::vector<int>* RowID_vector;
 
 struct SelectNode {
     std::vector<std::string> columns;
@@ -11,14 +17,17 @@ enum ConditionType { EQUALS, NOT_EQUALS, LESS_THAN, GREATER_THAN, OR, AND };
 std::string condition_token[6] = {"=", "!=", "<", ">", "or", "and"};
 
 struct FilterNode {
-    std::string columnName;
-    std::string value;
+    std::string columnName; // must be int column
+    union{
+        char c; int i; long l; float f; double d;
+    } value;  
+    int data_type;
     ConditionType conditionType;
     std::unique_ptr<FilterNode> left;
     std::unique_ptr<FilterNode> right;
 
     // Constructor for simple conditions
-    FilterNode(const std::string& col, const std::string& val, ConditionType cond)
+    FilterNode(const std::string& col, const int& val, ConditionType cond)
         : columnName(col), value(val), conditionType(cond), left(nullptr), right(nullptr) {}
 
     // Constructor for compound conditions
@@ -30,6 +39,15 @@ struct FilterNode {
         std::cout << "---\nCol Name: " << columnName << "\n" << "Value: " << value << "\n" << "Condition: " << conditionType << "\n---\n";
         if (right) right->print();
     }
+
+
+    RowID_vector mergeAndRemoveDuplicates(const RowID_vector vec1, const RowID_vector vec2);
+    RowID_vector execute(std::string table_name);
+    RowID_vector execute(std::string table_name, RowID_vector row_ids);
+
+    template <typename T>
+    RowID_vector apply_filter(std::string table_name, RowID_vector rows_to_process = nullptr);
+
 };
 
 

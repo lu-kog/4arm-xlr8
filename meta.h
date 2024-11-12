@@ -5,12 +5,12 @@
 
 
 
-#define DBINT 1
-#define DBCHAR 2
+#define DBCHAR 1
+#define DBINT 2
 #define DBLONG 3
-#define DBDOUBLE 4
-#define DBSTRING 5
-#define DBFLOAT 6
+#define DBFLOAT 4
+#define DBDOUBLE 5
+#define DBSTRING 6
 
 #include <string>
 #include <vector>
@@ -41,6 +41,7 @@ struct data{
     unsigned int row_id;
     bool is_deleated;
     dt data;  //Rename data as dadum and add null bit and constructor
+
 };
 
 
