@@ -30,7 +30,7 @@ RowID_vector FilterNode::mergeAndRemoveDuplicates(RowID_vector vec1, RowID_vecto
 }
 
 
-RowID_vector validate_and_apply(const std::string &table_name, RowID_vector rows_to_process = nullptr){
+RowID_vector FilterNode::validate_and_apply(const std::string &table_name, RowID_vector rows_to_process = nullptr){
     int col_type = get_column_meta(table_name, this->columnName)->data_type;
 
     if (this->data_type == DBSTRING || col_type != this->data_type)
