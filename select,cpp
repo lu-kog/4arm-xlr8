@@ -1,0 +1,196 @@
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <iostream>
+
+#include "Node.h"
+#include "meta.h"
+#include "data_fetcher.cpp"
+#include "meta_handler.cpp"
+#include "fileHandler.cpp"
+
+
+template <typename T>
+struct comp
+{
+    SortOrder order;
+
+
+    bool operator()(data<T> a, data<T> b){
+        if (order == ASC)
+        {
+            return b.data > a.data;   
+        }
+        return b.data < a.data;
+    }
+};
+
+
+
+void* execute(const QueryNode &q_node){
+    const std::string &table_name = q_node.selectNode.tableName;
+
+    const std::vector<std::string> & columns = q_node.selectNode.columns;
+
+    return nullptr;
+}
+
+
+
+
+
+
+template<typename T>
+RowID_vector sort_data(const SortNode &sort_n, std::string &table_name, RowID_vector filtered_rows = nullptr, LimitNode* N = nullptr){
+    
+
+    std::vector<data<T>> * data_to_sort = get_data_with_rowid<T>(table_name,sort_n.columnName,filtered_rows);
+
+
+    comp compare;
+    compare.order = sort_n.sortOrder;
+
+    if (N != nullptr)
+    {
+
+        //topN decision
+        if ( N->limit <= data_to_sort->size()/2 )
+        {
+            return topN_sort_data(data_to_sort,compare,N)
+        }
+        
+
+        
+    }
+    
+    
+
+
+    std::sort(data_to_sort->begin(), data_to_sort->end(),compare);
+
+    RowID_vector result = new std::vector<int>();
+
+    for (data<T> &i : (*data_to_sort))
+    {
+        result->push_back(i.row_id);
+    }
+
+    //Limit Impl
+    if (N != nullptr){
+        result->resize(N->limit);
+    }
+
+
+    
+    return result;
+
+
+    
+}
+
+
+template<typename T>
+RowID_vector sort_data(const SortNode &sort_n, std::string &table_name, LimitNode* N = nullptr){
+    return sort_data(sort_n,table_name,nullptr, N);
+}
+
+//Top n sort
+template<typename T>
+RowID_vector topN_sort_data(std::vector<data<T>> * data_to_sort, comp<T> compare,const LimitNode &N){
+    std::vector<data<T>> top_slots;
+
+
+    //Limit + 1 slots for push new val and pop
+    top_slots.reserve(N.limit+1);
+    
+
+     struct linked_node
+    {   
+        data<T> val;
+        linked_node *left = nullptr;
+        linked_node *right = nullptr;
+        linked_node(const data<T> &value):val(value){}
+        linked_node(){}
+
+        ~linked_node(){
+            delete right;
+        }
+
+    };
+
+
+    linked_node * root_node = new linked_node();
+
+
+    // sorting the first N values
+    std::sort(data_to_sort->begin(), data_to_sort->begin()+N.limit, compare);
+    
+
+    linked_node * curr_node = root_node;
+
+
+    // Geting the first n value from input data to linked list
+    // 
+    for (size_t i = 0; i < N.limit; i++)
+    {
+        curr_node->val = (*data_to_sort)[i];
+        curr_node->right = new linked_node;
+        linked_node *prv_node = curr_node;
+        curr_node = curr_node->right;
+        curr_node->left = prv_node;
+    }
+    
+    curr_node->left->right = nullptr;
+    
+    linked_node * last_node = curr_node->left;
+    delete curr_node;
+
+
+    for (size_t i = N.limit; i < data_to_sort->size(); i++)
+    {
+        curr_node = root_node;
+        while (curr_node)
+        {
+            if (compare((*data_to_sort)[i]),curr_node->val)
+            {
+
+
+                // if the value is to be swaped
+                linked_node *new_node = new linked_node((*data_to_sort)[i]);
+
+                bool is_first_node = (curr_node ==  root_node);
+                if (is_first_node)
+                {
+                    new_node->left = nullptr;  // It's the left most node
+                    curr_node->left = new_node;
+                    new_node->right = curr_node;
+
+
+                    root_node = new_node;
+                }
+                else{
+                    curr_node->left->right = new_node;
+                    new_node->left = curr_node->left;
+                    curr_node->left = new_node;
+                    new_node->right = curr_node;
+                }
+                //poping the last node;
+                linked_node * tmp = last_node->left;
+                tmp->right = nullptr;
+
+                delete last_node;
+
+                last_node = tmp;
+
+
+            }
+            curr_node = curr_node->right;
+
+                       
+        }
+        
+    }
+    
+
+};
+

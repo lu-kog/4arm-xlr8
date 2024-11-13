@@ -45,7 +45,7 @@ struct FilterNode {
 
     void print(){
         if (left) left->print();
-        std::cout << "---\nCol Name: " << columnName << "\n" << "Value: " << value << "\n" << "Condition: " << conditionType << "\n---\n";
+        std::cout << "---\nCol Name: " << columnName << "\n" << "\n" << "Condition: " << conditionType << "\n---\n";
         if (right) right->print();
     }
 
@@ -53,7 +53,7 @@ struct FilterNode {
     RowID_vector mergeAndRemoveDuplicates(RowID_vector vec1, RowID_vector vec2);
     RowID_vector execute(const std::string& table_name);
     RowID_vector execute(const std::string& table_name, RowID_vector row_ids);
-    RowID_vector FilterNode::validate_and_apply(const std::string &table_name, RowID_vector rows_to_process = nullptr);
+
     template <typename T>
     RowID_vector apply_filter(const std::string& table_name, RowID_vector rows_to_process = nullptr);
 
