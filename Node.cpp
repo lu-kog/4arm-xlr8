@@ -69,13 +69,13 @@ RowID_vector FilterNode::execute(const std::string &table_name){
     */
     if (this->conditionType == AND)
     {
-        RowID_vector filtered_row_id = this->left.get()->execute(table_name);
-        return right.get()->execute(table_name, filtered_row_id);
+        RowID_vector filtered_row_id = this->left->execute(table_name);
+        return right->execute(table_name, filtered_row_id);
 
     }else if(this->conditionType == OR)
     {
-        RowID_vector filtered_left_rows = this->left.get()->execute(table_name);
-        RowID_vector filtered_right_rows = this->right.get()->execute(table_name);
+        RowID_vector filtered_left_rows = this->left->execute(table_name);
+        RowID_vector filtered_right_rows = this->right->execute(table_name);
 
         return mergeAndRemoveDuplicates(filtered_left_rows, filtered_right_rows);
 
@@ -100,13 +100,13 @@ RowID_vector FilterNode::execute(const std::string& table_name, RowID_vector row
     RowID_vector result;
     if (this->conditionType == AND)
     {
-        RowID_vector filtered_row_id = this->left.get()->execute(table_name, row_ids);
-        result = right.get()->execute(table_name, filtered_row_id);
+        RowID_vector filtered_row_id = this->left->execute(table_name, row_ids);
+        result = right->execute(table_name, filtered_row_id);
 
     }else if(this->conditionType == OR)
     {
-        RowID_vector filtered_left_row = this->left.get()->execute(table_name, row_ids);
-        RowID_vector filtered_right_row = this->right.get()->execute(table_name, row_ids);
+        RowID_vector filtered_left_row = this->left->execute(table_name, row_ids);
+        RowID_vector filtered_right_row = this->right->execute(table_name, row_ids);
         result = mergeAndRemoveDuplicates(filtered_left_row, filtered_right_row);
 
     }else{

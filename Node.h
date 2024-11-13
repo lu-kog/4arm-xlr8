@@ -1,3 +1,10 @@
+#pragma once
+
+#ifndef _NODE_H
+
+#define _NODE_H 0
+
+
 #include<vector>
 #include<string>
 #include <memory>
@@ -23,8 +30,8 @@ struct FilterNode {
     } value;  
     int data_type;
     ConditionType conditionType;
-    std::unique_ptr<FilterNode> left;
-    std::unique_ptr<FilterNode> right;
+    FilterNode * left;
+    FilterNode * right;
 
     // Overloaded Constructors for simple conditions
     FilterNode(const std::string& col, char val, ConditionType cond)
@@ -40,8 +47,8 @@ struct FilterNode {
 
 
     // Constructor for compound conditions
-    FilterNode(std::unique_ptr<FilterNode> lhs, std::unique_ptr<FilterNode> rhs, ConditionType cond)
-        : left(std::move(lhs)), right(std::move(rhs)), conditionType(cond) {}
+    FilterNode(FilterNode * lhs, FilterNode * rhs, ConditionType cond)
+        : left(lhs), right(rhs), conditionType(cond) {}
 
     void print(){
         if (left) left->print();
@@ -85,7 +92,7 @@ struct LimitNode
         limit = limit_;
     }
 
-    LimitNode() : limit(-1){};
+    LimitNode(){};
 
     void print(){
         std::cout << "Limits: " << limit << std::endl;
@@ -95,7 +102,9 @@ struct LimitNode
 
 struct QueryNode {
     SelectNode selectNode;
-    std::unique_ptr<FilterNode> filterNode;
-    std::unique_ptr<SortNode> sortNode;
-    std::unique_ptr<LimitNode> limitNode;
+    FilterNode * filterNode;
+    SortNode * sortNode;
+    LimitNode * limitNode;
 };
+
+#endif
