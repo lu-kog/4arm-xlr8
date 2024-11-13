@@ -1,26 +1,24 @@
 #include "Node.h"
 
-
-
 template <typename T>
-bool compute(T & given_value , T &row_value, ConditionType op){
+bool compute(const T & filter_value , const T &row_value, ConditionType op){
         switch (op)
         {
             case EQUALS:
-                return row_value == given_value;
+                return row_value == filter_value;
             case NOT_EQUALS:
-                return row_value != given_value;
+                return row_value != filter_value;
             case LESS_THAN:
-                return row_value < given_value;
+                return row_value < filter_value;
             case GREATER_THAN:
-                return row_value > given_value;
+                return row_value > filter_value;
             default:
                 throw std::invalid_argument("Invalid Operation!");
                 break;
         }
     }
 
-RowID_vector FilterNode::mergeAndRemoveDuplicates(const RowID_vector vec1, const RowID_vector vec2) {
+RowID_vector FilterNode::mergeAndRemoveDuplicates(RowID_vector vec1, RowID_vector vec2) {
     std::set<int> uniqueElements(filtered_left_row->begin(), filtered_left_row->end());
     uniqueElements.insert(filtered_right_row->begin(), filtered_right_row->end());
 
@@ -92,38 +90,40 @@ RowID_vector FilterNode::execute(const std::string &table_name){
     
 }
 
-RowID_vector FilterNode::execute(std::string table_name, RowID_vector row_ids){
+RowID_vector FilterNode::execute(const std::string& table_name, RowID_vector row_ids){
     /*
     Read data of given row ids
     it can be and, or condtion
     if and, give param left and lefts output to the right
     if or, give the same param for both left and right and put into Set{};
     */
-
+    RowID_vector result;
     if (this->conditionType == AND)
     {
         RowID_vector filtered_row_id = this->left.get()->execute(table_name, row_ids);
-        return right.get()->execute(table_name, filtered_row_id);
+        result = right.get()->execute(table_name, filtered_row_id);
 
     }else if(this->conditionType == OR)
     {
         RowID_vector filtered_left_row = this->left.get()->execute(table_name, row_ids);
         RowID_vector filtered_right_row = this->right.get()->execute(table_name, row_ids);
-
-        return mergeAndRemoveDuplicates(filtered_left_row, filtered_right_row);
+        result = mergeAndRemoveDuplicates(filtered_left_row, filtered_right_row);
 
     }else{
-        return validate_and_apply(table_name, row_ids);
+        result = validate_and_apply(table_name, row_ids);
     }
+
+    delete row_ids;
+    return result;
 }
 
 template <typename T>
-RowID_vector FilterNode::apply_filter(std::string table_name, RowID_vector rows_to_process = nullptr) {
+RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vector rows_to_process = nullptr) {
 
     
     std::pair<block_meta<T> *, int> meta_array = get_all_block_meta(table_name, this->columnName);
 
-    //  Skip blocks
+    //  Skip blocks with meta data
     std::vector<int> selected_blocks;
     for (size_t i = 0; i < meta_array.second; i++)
     {
@@ -138,6 +138,9 @@ RowID_vector FilterNode::apply_filter(std::string table_name, RowID_vector rows_
     
     // get data for selected blocks
     std::vector<data<T>> * full_data = get_block_data(table_name, this->columnName, selected_blocks, meta_array);
+    
+    delete meta_array.first; // clear block metas
+
 
     // skip row Ids
     std::unordered_set<int> filterSet;
@@ -151,9 +154,30 @@ RowID_vector FilterNode::apply_filter(std::string table_name, RowID_vector rows_
     for (int i = 0; i < full_data->size(); i++)
     {
         data<T> &d = full_data->at(i);
-        if (rows_to_process==nullptr || filterSet.count(d.row_id))
+        T filter_value;
+
+        switch (this->data_type)
         {
-            if (compute(this->value, d.data, this->conditionType))
+        case DBCHAR:
+            filter_value = this->value.c;
+            break;
+        case DBINT:
+            filter_value = this->value.i;
+            break;
+        case DBLONG:
+            filter_value = this->value.l;
+            break;
+        case DBFLOAT:
+            filter_value = this->value.f;
+            break;
+        case DBDOUBLE:
+            filter_value = this->value.d;
+            break;
+        }
+
+        if (rows_to_process==nullptr || filterSet.count(d.row_id) )
+        {
+            if (compute(filter_value, d.data, this->conditionType))
             {
                 result->push_back(d.row_id);
             }
@@ -163,6 +187,7 @@ RowID_vector FilterNode::apply_filter(std::string table_name, RowID_vector rows_
     }
     
     // clear memory
+    delete full_data;
 
     return result;
 }

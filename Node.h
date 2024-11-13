@@ -26,9 +26,18 @@ struct FilterNode {
     std::unique_ptr<FilterNode> left;
     std::unique_ptr<FilterNode> right;
 
-    // Constructor for simple conditions
-    FilterNode(const std::string& col, const int& val, ConditionType cond)
-        : columnName(col), value(val), conditionType(cond), left(nullptr), right(nullptr) {}
+    // Overloaded Constructors for simple conditions
+    FilterNode(const std::string& col, char val, ConditionType cond)
+        : columnName(col), data_type(DBCHAR), conditionType(cond), left(nullptr), right(nullptr) { value.c = val; }
+    FilterNode(const std::string& col, int val, ConditionType cond)
+        : columnName(col), data_type(DBINT), conditionType(cond), left(nullptr), right(nullptr) { value.i = val; }
+    FilterNode(const std::string& col, long val, ConditionType cond)
+        : columnName(col), data_type(DBLONG), conditionType(cond), left(nullptr), right(nullptr) { value.l = val; }
+    FilterNode(const std::string& col, float val, ConditionType cond)
+        : columnName(col), data_type(DBFLOAT), conditionType(cond), left(nullptr), right(nullptr) { value.f = val; }
+    FilterNode(const std::string& col, double val, ConditionType cond)
+        : columnName(col), data_type(DBDOUBLE), conditionType(cond), left(nullptr), right(nullptr) { value.d = val; }
+
 
     // Constructor for compound conditions
     FilterNode(std::unique_ptr<FilterNode> lhs, std::unique_ptr<FilterNode> rhs, ConditionType cond)
@@ -41,12 +50,12 @@ struct FilterNode {
     }
 
 
-    RowID_vector mergeAndRemoveDuplicates(const RowID_vector vec1, const RowID_vector vec2);
-    RowID_vector execute(std::string table_name);
-    RowID_vector execute(std::string table_name, RowID_vector row_ids);
+    RowID_vector mergeAndRemoveDuplicates(RowID_vector vec1, RowID_vector vec2);
+    RowID_vector execute(const std::string& table_name);
+    RowID_vector execute(const std::string& table_name, RowID_vector row_ids);
 
     template <typename T>
-    RowID_vector apply_filter(std::string table_name, RowID_vector rows_to_process = nullptr);
+    RowID_vector apply_filter(const std::string& table_name, RowID_vector rows_to_process = nullptr);
 
 };
 

@@ -68,7 +68,7 @@ data<T> * get_block_data(const std::string &table_name, const std::string &col_n
 
 
 template <typename T>
-std::vector<data<T>> * get_block_data(std::string table_name, std::string col_name, const std::vector<int> &block_nos , const std::pair<block_meta<T> *, int> & blk_meta){
+std::vector<data<T>> * get_block_data(const std::string& table_name, const std::string& col_name, const std::vector<int> &block_nos , const std::pair<block_meta<T> *, int> & blk_meta){
     std::ifstream file(get_file_path(table_name,col_name));
      
     std::vector<data<T>> all_data = new std::vector<data<T>>;
