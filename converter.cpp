@@ -2,11 +2,11 @@
 #define conv 1
 
 
-#include <vector>
 #include "meta.h"
+#include <vector>
 #include <string>
-#include <iostream>
 #include "string_handler.cpp"
+#include <iostream>
 #include "meta_handler.cpp"
 #include <fstream>
 
@@ -92,7 +92,7 @@ void delete_vec(column_obj &column)
 }
 
 
-void initilaize_column_objs(const schema_meta &schema, std::vector<column_obj> &table_data){
+void initilaize_column_objs(const schema_meta &schema, std::vector<column_obj> &table_data,const int &total_data){
     for (size_t i = 0; i < schema.number_of_columns; i++)
     {
         column_obj temp;
@@ -100,7 +100,7 @@ void initilaize_column_objs(const schema_meta &schema, std::vector<column_obj> &
         temp.meta.data_type = schema.data_type[i];
         temp.meta.no_block = 0;
 
-        temp.meta.total_records = (data_as_string.size() / schema.number_of_columns);
+        temp.meta.total_records = (total_data / schema.number_of_columns);
 
         create_vec(temp);
         table_data.push_back(temp);
@@ -125,10 +125,12 @@ std::vector<column_obj> &type_casting(std::vector<std::string> &data_as_string, 
     int number_of_data = data_as_string.size();
 
 
-    // column_meta * column_meta = 
+    column_meta * column_meta = get_column_meta(table_name,schema_for_table.fields->second);
+
+    int initaial_row_id = column_meta->total_records;
 
 
-    initilaize_column_objs(schema_for_table,table_data);
+    initilaize_column_objs(schema_for_table,table_data,number_of_data);
 
 
     // when the number of columns and given data doesn't match
@@ -151,7 +153,7 @@ std::vector<column_obj> &type_casting(std::vector<std::string> &data_as_string, 
 
         for (size_t i = 0; i < number_of_data; i++)
         {
-            unsigned int row_id = (i / schema_for_table.number_of_columns);
+            unsigned int row_id = initaial_row_id +  (i / schema_for_table.number_of_columns);
             int column_no = (i % schema_for_table.number_of_columns);
             switch (schema_for_table.data_type[column_no])
             {
