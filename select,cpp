@@ -332,7 +332,7 @@ RowID_vector sort_data(const std::string &table_name,SortNode *sort_n, LimitNode
 
 
 template<typename T>
-RowID_vector limit_data(const std::string & table_name, const std::string &col_name, const LimitNode &l_node){
+RowID_vector limit_data(const std::string & table_name, const std::string &col_name, LimitNode *l_node){
     RowID_vector result = new std::vector<int>();
 
     std::vector<data<T>> * data_to_sort = get_data_with_rowid<T>(table_name,col_name,nullptr);
@@ -352,9 +352,42 @@ RowID_vector limit_data(const std::string & table_name, const std::string &col_n
     return result;
 }
 
-RowID_vector get_limit_data(){
+RowID_vector get_limit_data(const std::string & table_name, const std::string &col_name, LimitNode *l_node){
+    column_meta * col_meta = get_column_meta(table_name,col_name);
 
+
+
+    switch (col_meta->data_type) {
+        case DBINT:{
+            
+            return limit_data<int>(table_name,col_name,l_node);
+        };
+        case DBCHAR:{
+            return limit_data<char>(table_name,col_name,l_node);
+        };
+
+        case DBLONG:{
+            return limit_data<long>(table_name,col_name,l_node);
+        };
+
+        case DBDOUBLE:{
+            return limit_data<double>(table_name,col_name,l_node);
+        };
+
+        case DBFLOAT:{
+            return limit_data<float>(table_name,col_name,l_node);
+        };
+        case DBSTRING:{
+            return limit_data<Dbstr>(table_name,col_name,l_node);
+        };
+        default:{
+            throw std::invalid_argument("Unexpected data type in sort node");
+        };
+
+        
+    }
 }
+
 
 
 RowID_vector get_sorted_data(const std::string &table_name,SortNode *sort_n, RowID_vector filtered_rows = nullptr, LimitNode* N = nullptr){
