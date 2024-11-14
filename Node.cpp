@@ -125,16 +125,16 @@ RowID_vector FilterNode::execute(const std::string& table_name, RowID_vector row
 }
 
 template <typename T>
-RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vector rows_to_process = nullptr) {
+RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vector rows_to_process) {
 
     
-    std::pair<block_meta<T> *, int> meta_array = get_all_block_meta(table_name, this->columnName);
+    std::pair<block_meta<T> *, int> meta_array = get_all_block_meta<T>(table_name, this->columnName);
 
     //  Skip blocks with meta data
     std::vector<int> selected_blocks;
     for (size_t i = 0; i < meta_array.second; i++)
     {
-        block_meta<T> temp = (*meta_array.first)[i];
+        block_meta<T> temp = meta_array.first[i];
         bool in_range = temp.count > 0 && this->value >= temp.min && this->value <= temp.max;
         if (in_range)
         {
