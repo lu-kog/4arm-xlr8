@@ -1,14 +1,13 @@
 #pragma once
 
 #ifndef _NODE_H
-
 #define _NODE_H 0
 
 
 #include<vector>
 #include<string>
 #include <memory>
-#include <meta.h>
+#include "meta.h"
 #include <set>
 #include<unordered_set>
 #include<variant>
@@ -60,9 +59,9 @@ struct FilterNode {
     RowID_vector mergeAndRemoveDuplicates(RowID_vector vec1, RowID_vector vec2);
     RowID_vector execute(const std::string& table_name);
     RowID_vector execute(const std::string& table_name, RowID_vector row_ids);
-
+    RowID_vector validate_and_apply(const std::string &table_name, RowID_vector rows_to_process);
     template <typename T>
-    RowID_vector apply_filter(const std::string& table_name, RowID_vector rows_to_process = nullptr);
+    RowID_vector apply_filter(const std::string& table_name, RowID_vector rows_to_process);
 
 };
 

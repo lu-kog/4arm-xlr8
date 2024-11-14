@@ -1,4 +1,11 @@
+#pragma once
+
+#ifndef _NODE_CPP
+#define _NODE_CPP 420
+
 #include "Node.h"
+#include "meta_handler.cpp"
+#include "data_fetcher.cpp"
 
 template <typename T>
 bool compute(const T & filter_value , const T &row_value, ConditionType op){
@@ -18,11 +25,11 @@ bool compute(const T & filter_value , const T &row_value, ConditionType op){
         }
     }
 
-RowID_vector FilterNode::mergeAndRemoveDuplicates(RowID_vector vec1, RowID_vector vec2) {
+RowID_vector FilterNode::mergeAndRemoveDuplicates(RowID_vector filtered_left_row, RowID_vector filtered_right_row) {
     std::set<int> uniqueElements(filtered_left_row->begin(), filtered_left_row->end());
     uniqueElements.insert(filtered_right_row->begin(), filtered_right_row->end());
 
-    delete vec1, vec2; // free memory
+    delete filtered_left_row, filtered_right_row; // free memory
 
     RowID_vector result = new std::vector<int>(uniqueElements.begin(), uniqueElements.end());
     
@@ -127,7 +134,7 @@ RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vecto
     std::vector<int> selected_blocks;
     for (size_t i = 0; i < meta_array.second; i++)
     {
-        block_meta<T> temp = *meta_array.first[i];
+        block_meta<T> temp = (*meta_array.first)[i];
         bool in_range = temp.count > 0 && this->value >= temp.min && this->value <= temp.max;
         if (in_range)
         {
@@ -146,7 +153,7 @@ RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vecto
     std::unordered_set<int> filterSet;
     if (rows_to_process)
     {
-        filterSet = std::unordered_set<int>(rows_to_process.begin(), rows_to_process.end());
+        filterSet = std::unordered_set<int>(rows_to_process->begin(), rows_to_process->end());
     }
     
     
@@ -192,3 +199,6 @@ RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vecto
     return result;
 }
 
+
+
+#endif

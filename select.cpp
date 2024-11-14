@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include "Node.h"
+#include "Node.cpp"
 #include "meta.h"
 #include "data_fetcher.cpp"
 #include "meta_handler.cpp"
@@ -29,8 +30,6 @@ struct comp
         return b.data < a.data;
     }
 };
-
-
 
 void *get_data_from_table(const std::string &t_name, const std::string &col_name, std::vector<int> &row_id) {
 
@@ -88,8 +87,6 @@ void *get_data_from_table(const std::string &t_name, const std::string &col_name
     return nullptr;
 }
 
-
-
 /* 
  * Converts a vector of integers into ranges. 
  * Consecutive numbers are grouped as "start-end", non-consecutive numbers are individual ranges.
@@ -119,8 +116,6 @@ std::vector<std::pair<int, int>> convertToRanges(const std::vector<int>& nums) {
     return ranges;
 }
 
-
-
 template <typename T>
 void read_data_with_row_id_range(std::ifstream &file,const std::pair<int,int> &range, char* buffer){
 
@@ -141,10 +136,6 @@ void read_data_with_row_id_range(std::ifstream &file,const std::pair<int,int> &r
     int offset = sizeof(column_meta) + ((sizeof(block_meta<T>) + (sizeof(data<T>) * 100)) * block_no)   + sizeof(block_meta<T>);
     readBinaryFile(buffer,size, offset,file);
 }
-
-
-
-
 
 //Top n sort
 template<typename T>
@@ -267,9 +258,6 @@ RowID_vector topN_sort_data(std::vector<data<T>> * data_to_sort, comp<T> compare
 
 };
 
-
-
-
 template<typename T>
 RowID_vector sort_data(const std::string &table_name,SortNode *sort_n, RowID_vector filtered_rows = nullptr, LimitNode* N = nullptr){
     
@@ -323,13 +311,10 @@ RowID_vector sort_data(const std::string &table_name,SortNode *sort_n, RowID_vec
     
 }
 
-
 template<typename T>
 RowID_vector sort_data(const std::string &table_name,SortNode *sort_n, LimitNode* N = nullptr){
     return sort_data<T>(table_name,sort_n,nullptr, N);
 }
-
-
 
 template<typename T>
 RowID_vector limit_data(const std::string & table_name, const std::string &col_name, LimitNode *l_node){
@@ -342,9 +327,9 @@ RowID_vector limit_data(const std::string & table_name, const std::string &col_n
         result->push_back(i.row_id);
     }
 
-    if (l_node.limit < result->size())
+    if (l_node->limit < result->size())
     {
-        result->resize(l_node.limit);
+        result->resize(l_node->limit);
     }
     
     delete data_to_sort;
@@ -388,8 +373,6 @@ RowID_vector get_limit_data(const std::string & table_name, const std::string &c
     }
 }
 
-
-
 RowID_vector get_sorted_data(const std::string &table_name,SortNode *sort_n, RowID_vector filtered_rows = nullptr, LimitNode* N = nullptr){
 
     std::string &col_name = sort_n->columnName;
@@ -425,8 +408,6 @@ RowID_vector get_sorted_data(const std::string &table_name,SortNode *sort_n, Row
     }
 }
 
-
-
 void* execute(const QueryNode &q_node){
     const std::string &table_name = q_node.selectNode.tableName;
     const std::vector<std::string> & columns = q_node.selectNode.columns;
@@ -454,7 +435,5 @@ void* execute(const QueryNode &q_node){
 
     return nullptr;
 }
-
-
 
 #endif

@@ -1,3 +1,9 @@
+#pragma once
+
+#ifndef _DATA_F
+#define _DATA_F 69
+
+
 #include "meta.h"
 #include "fileHandler.cpp"
 #include "cred.cpp"
@@ -53,7 +59,7 @@ data<T> * get_block_data(const std::string &table_name, const std::string &col_n
 
 
 
-    std::ifstream file(get_file_path(table_name,col_name));
+    std::ifstream file(get_file_path(table_name,col_name),std::ios::binary);
      
     data<T> * block_data = get_block_data(file,block_no,blk_meta);
 
@@ -61,15 +67,19 @@ data<T> * get_block_data(const std::string &table_name, const std::string &col_n
 
 
     return block_data;
-
 } 
 
 
 
 
+
+
+
+
+
 template <typename T>
-std::vector<data<T>> * get_block_data(const std::string& table_name, const std::string& col_name, const std::vector<int> &block_nos , const std::pair<block_meta<T> *, int> & blk_meta){
-    std::ifstream file(get_file_path(table_name,col_name));
+std::vector<data<T>> * get_block_data(std::string table_name, std::string col_name, const std::vector<int> &block_nos , const std::pair<block_meta<T> *, int> & blk_meta){
+    std::ifstream file(get_file_path(table_name,col_name),std::ios::binary);
      
     std::vector<data<T>> all_data = new std::vector<data<T>>;
 
@@ -83,7 +93,7 @@ std::vector<data<T>> * get_block_data(const std::string& table_name, const std::
         all_data.insert(all_data.end(),block_data,block_data+single_blk_meta.count);
 
 
-        delete block_data[];
+        delete []block_data;
         
     }
     
@@ -92,9 +102,6 @@ std::vector<data<T>> * get_block_data(const std::string& table_name, const std::
 
     return all_data;
 }
-
-
-
 
 //for getting block meta pointer and count of block meta
 template <typename T>
@@ -106,7 +113,7 @@ std::pair<block_meta<T> *, int> get_all_block_meta(const std::string &table_name
     int offset_for_pointer = 0;
     block_meta<T> *all_blk_meta  = new block_meta<T>[no_blocks];
 
-    std::ifstream column_file(get_path()+table_name+"/"+col_name,std::ios::binary);
+    std::ifstream column_file(get_file_path(table_name,col_name),std::ios::binary);
     
     for (size_t i = 0; i < no_blocks; i++)
     {
@@ -124,47 +131,57 @@ std::pair<block_meta<T> *, int> get_all_block_meta(const std::string &table_name
 }
 
 
-
-#if 0
-
-int main(int argc, char const *argv[])
-{
-    get_home_folder();
-    block_meta<Dbstr> blk_meta;
-
-    blk_meta.count = 20;
+template <typename T>
+std::vector<data<T>> * get_data_with_rowid(const std::string &table_name, const std::string &col_name, RowID_vector filterd_rows){
+    std::pair<block_meta<T> *,int> all_block_meta = get_all_block_meta<T>(table_name,col_name);
 
 
 
-    std::string table_name = "kcc";
-
-    std::string column_name = "Najimi";
 
 
+
+    std::ifstream col_file(get_file_path(table_name,col_name),std::ios::binary);
+
+
+
+    std::vector<data<T>> * all_data = new std::vector<data<T>>;
     
-
-    std::pair<block_meta<Dbstr> *,int> all_block_meta = get_all_block_meta<Dbstr>(table_name,column_name);
-
-
-
-    // std::cout << str_file_reader(table_name,all_block_meta.first->min) << std::endl;
-
-
 
     for (size_t i = 0; i < all_block_meta.second; i++)
     {
-        
-        data<Dbstr> * all_data = get_block_data(table_name, column_name, (i+1) , all_block_meta.first[i]);
-
-        for (size_t j = 0; j < all_block_meta.first[i].count ; j++)
-        {
-            std::cout <<   all_data[j].row_id << std::endl;
-        }
-        
-
+        data<T> * blk_data = get_block_data(col_file, (i+1) , all_block_meta.first[i]);
+        all_data->insert(all_data->end(),blk_data,blk_data+all_block_meta.first[i].count);
         delete[] all_data;
     }
-    return 0;
+
+    
+
+    
+
+    if(filterd_rows != nullptr){
+
+        if (all_data->size() < filterd_rows->size()) {
+            throw std::runtime_error("The number of filtered rows exceeds the total number of rows in the column.");
+        }
+
+
+
+        std::vector<data<T>> temp_vec(filterd_rows->size());
+
+        int size = temp_vec.size(); 
+
+        for (size_t i = 0; i < size; i++)
+        {
+            temp_vec[i] = (*all_data)[(*filterd_rows)[i]];
+        }        
+
+        all_data->swap(temp_vec);
+    }
+    col_file.close();
+
+    return all_data;    
+
+
 }
 
 #endif
