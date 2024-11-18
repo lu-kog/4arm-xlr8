@@ -138,10 +138,10 @@ std::vector<data<T>> * get_data_with_rowid(const std::string &table_name, const 
 
 
 
+    std::string path = get_file_path(table_name,col_name);
 
 
-
-    std::ifstream col_file(get_file_path(table_name,col_name),std::ios::binary);
+    std::ifstream col_file(path,std::ios::binary);
 
 
 

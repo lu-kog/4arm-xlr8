@@ -31,6 +31,36 @@ void readBinaryFile(const std::string &filename, char *buffer, long long size, i
     }
 }
 
+
+
+
+void readBinaryFile(char *buffer, long long size, int offset, std::ifstream &inFile)
+{
+    try
+    {
+        
+
+        // Enable exceptions for failure
+        inFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+        // Move the file pointer to the specified offset
+        inFile.seekg(offset, std::ios::beg);
+
+        // Read 'size' bytes into the buffer
+        inFile.read(buffer, size);
+
+    }
+    catch (const std::ios_base::failure &e)
+    {
+        std::cerr << "Error reading from file: " << e.what() << std::endl;
+    }
+}
+
+
+
+
+
+
 void writeRecords(const std::string &filename, const char *buffer, long long size, long long offSet)
 {
     try
@@ -77,6 +107,7 @@ int get_size(std::string file_name){
    int file_size = in_file.tellg();
    return file_size;
 }
+
 
 
 // std::ofstream outFile()

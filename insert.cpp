@@ -9,12 +9,11 @@
 #include "fileHandler.cpp"
 #include "meta_handler.cpp"
 #include <cstring>
-#include<future>
 
 #include "csv_parser.cpp"
 #include "converter.cpp"
 
-#define records_limit 100
+
 
 void createBlocks(column_obj & clm, std::string& table_name, std::string& col_name);
 
@@ -26,27 +25,18 @@ void dump_new_records(std::vector<block_obj<T>> & new_blocks, std::string &table
 template <typename T>
 block_obj<T> * readIncompleteBlockFromFile(const column_meta& col_meta, std::string& table_name, std::string& col_name);
 
+void insertIntoTable(std::vector<column_obj> & columns_to_insert, std::string& table_name, schema_meta & table_schema){
 
-
-/*-------------------------------------------------------------------------------------------*/
-
-
-void insertIntoTable(std::vector<column_obj> &columns_to_insert, std::string &table_name, schema_meta &table_schema) {
-    std::vector<std::future<void>> futures;
-
-    for (int i = 0; i < columns_to_insert.size(); i++) {
-        std::string col_name = table_schema.fields[i].second; // Scope col_name for each thread
-        
-        futures.push_back(std::async(std::launch::async, createBlocks, columns_to_insert.at(i), table_name, col_name));
+    for (int i = 0; i < columns_to_insert.size(); i++)
+    {
+        std::string col_name = table_schema.fields[i].second; // While creating for thread handle the col_name scope; 
+        createBlocks(columns_to_insert.at(i), table_name, col_name);
     }
-
-    for (auto &fut : futures) {
-        fut.get();  // Wait for all threads to complete
-    }
+    
 }
 
 
-void createBlocks(column_obj & clm, const std::string& table_name, const std::string col_name){
+void createBlocks(column_obj & clm, std::string& table_name, std::string& col_name){
 
     column_meta meta_to_process = clm.meta;
 
@@ -81,7 +71,7 @@ void createBlocks(column_obj & clm, const std::string& table_name, const std::st
 
 
 template <typename T>
-void processColumnData(std::vector<data<T>> &newRecords, const std::string& table_name, const std::string& col_name) {
+void processColumnData(std::vector<data<T>> &newRecords, std::string& table_name, std::string& col_name) {
     column_meta * col_meta = get_column_meta(table_name, col_name);
 
     std::vector<block_obj<T>> new_blocks;
