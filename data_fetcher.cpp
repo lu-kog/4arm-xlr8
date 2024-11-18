@@ -81,22 +81,23 @@ template <typename T>
 std::vector<data<T>> * get_block_data(std::string table_name, std::string col_name, const std::vector<int> &block_nos , const std::pair<block_meta<T> *, int> & blk_meta){
     std::ifstream file(get_file_path(table_name,col_name),std::ios::binary);
      
-    std::vector<data<T>> all_data = new std::vector<data<T>>;
+    std::vector<data<T>> *all_data = new std::vector<data<T>>;
 
     for (int blk_no : block_nos)
     {
 
-        block_meta<T> & single_blk_meta = blk_meta[blk_no];
+        block_meta<T> & single_blk_meta = blk_meta.first[blk_no-1];
 
         data<T> * block_data = get_block_data(file,blk_no,single_blk_meta);
 
-        all_data.insert(all_data.end(),block_data,block_data+single_blk_meta.count);
+        all_data->insert(all_data->end(),block_data,block_data+single_blk_meta.count);
 
 
         delete []block_data;
         
     }
     
+    int size = all_data->size();
 
     file.close();
 
@@ -151,7 +152,7 @@ std::vector<data<T>> * get_data_with_rowid(const std::string &table_name, const 
     {
         data<T> * blk_data = get_block_data(col_file, (i+1) , all_block_meta.first[i]);
         all_data->insert(all_data->end(),blk_data,blk_data+all_block_meta.first[i].count);
-        delete[] all_data;
+        delete[] blk_data;
     }
 
     

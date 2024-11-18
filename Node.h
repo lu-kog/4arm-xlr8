@@ -101,9 +101,9 @@ struct LimitNode
 
 struct QueryNode {
     SelectNode selectNode;
-    FilterNode * filterNode;
-    SortNode * sortNode;
-    LimitNode * limitNode;
+    FilterNode * filterNode = nullptr;
+    SortNode * sortNode = nullptr;
+    LimitNode * limitNode = nullptr;
 };
 
 #endif

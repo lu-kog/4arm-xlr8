@@ -125,6 +125,34 @@ RowID_vector FilterNode::execute(const std::string& table_name, RowID_vector row
 }
 
 template <typename T>
+bool meta_check(FilterNode & f_node,T min, T max)
+{   
+
+    switch (f_node.data_type)
+    {
+    case DBCHAR:
+        return (f_node.value.c >= min && f_node.value.c <= max);
+        break;
+    case DBDOUBLE:
+        return (f_node.value.d >= min && f_node.value.d <= max);
+        break;
+    case DBINT:
+        return (f_node.value.i >= min && f_node.value.i <= max);
+        break;
+    case DBFLOAT:
+        return (f_node.value.f >= min && f_node.value.f <= max);
+        break;
+    case DBLONG:
+        return (f_node.value.l >= min && f_node.value.l <= max);
+        break;
+    default:
+        throw std::invalid_argument("Unexpected datatype");
+        break;
+    }
+
+}
+
+template <typename T>
 RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vector rows_to_process) {
 
     
@@ -135,10 +163,10 @@ RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vecto
     for (size_t i = 0; i < meta_array.second; i++)
     {
         block_meta<T> temp = meta_array.first[i];
-        bool in_range = temp.count > 0 && this->value >= temp.min && this->value <= temp.max;
+        bool in_range = temp.count > 0 && meta_check(*this, temp.min, temp.max);
         if (in_range)
         {
-            selected_blocks.push_back(i);
+            selected_blocks.push_back(i+1);
         }
         
     }
@@ -156,7 +184,7 @@ RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vecto
         filterSet = std::unordered_set<int>(rows_to_process->begin(), rows_to_process->end());
     }
     
-    
+    std::cout << "----------------" << std::endl;
     RowID_vector result = new std::vector<int>();
     for (int i = 0; i < full_data->size(); i++)
     {
@@ -182,10 +210,12 @@ RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vecto
             break;
         }
 
+
         if (rows_to_process==nullptr || filterSet.count(d.row_id) )
         {
             if (compute(filter_value, d.data, this->conditionType))
             {
+                std::cout << d.data << std::endl;
                 result->push_back(d.row_id);
             }
             
@@ -193,6 +223,8 @@ RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vecto
         
     }
     
+    std::cout << "----------------" << std::endl;
+
     // clear memory
     delete full_data;
 

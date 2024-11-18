@@ -316,18 +316,32 @@ RowID_vector sort_data(const std::string &table_name,SortNode *sort_n, LimitNode
     return sort_data<T>(table_name,sort_n,nullptr, N);
 }
 
+
+std::ostream &operator<<(std::ostream & os, Dbstr str){
+    return os;
+}
+
+
 template<typename T>
-RowID_vector limit_data(const std::string & table_name, const std::string &col_name, LimitNode *l_node){
+RowID_vector limit_data(const std::string & table_name, const std::string &col_name, LimitNode *l_node = nullptr){
     RowID_vector result = new std::vector<int>();
 
     std::vector<data<T>> * data_to_sort = get_data_with_rowid<T>(table_name,col_name,nullptr);
 
+
+    std::cout <<"--------------------------------------" << std::endl;
+    
     for (data<T> &i : (*data_to_sort))
     {
         result->push_back(i.row_id);
-    }
 
-    if (l_node->limit < result->size())
+
+        std::cout << i.data << std::endl;
+    }
+    std::cout <<"--------------------------------------" << std::endl;
+
+
+    if ( (l_node != nullptr) && ( l_node->limit < result->size()))
     {
         result->resize(l_node->limit);
     }
@@ -408,7 +422,7 @@ RowID_vector get_sorted_data(const std::string &table_name,SortNode *sort_n, Row
     }
 }
 
-void* execute(const QueryNode &q_node){
+RowID_vector execute(const QueryNode &q_node){
     const std::string &table_name = q_node.selectNode.tableName;
     const std::vector<std::string> & columns = q_node.selectNode.columns;
 
@@ -423,17 +437,62 @@ void* execute(const QueryNode &q_node){
     }
 
     //Only limit node found
-    if (result == nullptr && q_node.limitNode != nullptr)
+    if (result == nullptr)
     {
-        
+        result = get_limit_data(table_name,columns[0], q_node.limitNode);
     }
     
     
+    for (size_t i = 0; i < result->size(); i++)
+    {
+        std::cout << result->at(i) << std::endl;
+    }
     
 
 
 
-    return nullptr;
+    return result;
+}
+
+
+int main(int argc, char const *argv[])
+{
+    get_home_folder();
+    QueryNode qn;
+
+    std::vector<std::string> cols = {"Tadano", "Tadano"};
+    std::string t_name = "kcc"; 
+
+    qn.selectNode.columns = cols;
+    qn.selectNode.tableName = t_name;
+
+    FilterNode left("Tadano",80.1f,GREATER_THAN);
+
+    FilterNode right("Komi",10,GREATER_THAN);
+
+    FilterNode rn(&left,&right,AND);
+
+
+    qn.filterNode = &rn;
+
+
+    SortNode sn("Tadano",DESC);
+
+    qn.sortNode = &sn;
+
+
+    RowID_vector res =  execute(qn);
+
+
+    std::vector<data<float>> * data_to_sort = get_data_with_rowid<float>(t_name,cols[0],res);
+
+    for (auto &&i : *data_to_sort)
+    {
+        std::cout << i.data << std::endl;
+    }
+    
+
+    return 0;
 }
 
 #endif
