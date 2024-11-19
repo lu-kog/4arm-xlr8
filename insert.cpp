@@ -90,10 +90,10 @@ void processColumnData(std::vector<data<T>> &newRecords, std::string& table_name
             // Meta updation.. skip if it string
             if (!is_string)
             {
-                if (it->data > lastBlock->meta.max)
+                if ((it->data) > lastBlock->meta.max)
                 {
                     lastBlock->meta.max = it->data;
-                }else if (it->data < lastBlock->meta.min)
+                }else if ((it->data) < lastBlock->meta.min)
                 {
                     lastBlock->meta.min = it->data;
                 }
