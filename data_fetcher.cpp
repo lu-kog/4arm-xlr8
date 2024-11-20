@@ -39,8 +39,16 @@ data<T> * get_block_data(std::ifstream &file, const int block_no , const block_m
 
     if (block_no <= 0) {
         throw std::invalid_argument("block_no must be greater than 0");
-    }    
-    int offset = sizeof(column_meta) + ((sizeof(block_meta<T>) + (sizeof(data<T>) * 100))  * (block_no-1))   + sizeof(block_meta<T>);
+    }  
+
+    int column_meta_size = sizeof(column_meta); 
+    int block_meta_size = sizeof(block_meta<T>);
+    int data_size = sizeof(data<T>);
+    int block_size =   block_meta_size + (data_size * 100);
+
+    int offset =  column_meta_size + ((block_no-1) * block_size);
+
+    offset += block_meta_size;  // for current block meta
 
     data<T> * all_data_frm_blk = new data<T>[blk_meta.count];
 
@@ -110,18 +118,20 @@ std::pair<block_meta<T> *, int> get_all_block_meta(const std::string &table_name
     column_meta *curr_col_meta = get_column_meta(table_name, col_name);
 
     int no_blocks = curr_col_meta->no_block;
-    int offset_for_file = sizeof(column_meta);
-    int offset_for_pointer = 0;
+    int column_meta_size = sizeof(column_meta);
+    int block_size = sizeof(block_meta<T>) + (100 * sizeof(data<T>));
+
+    int offset_for_file = column_meta_size;
+    
     block_meta<T> *all_blk_meta  = new block_meta<T>[no_blocks];
 
     std::ifstream column_file(get_file_path(table_name,col_name),std::ios::binary);
     
     for (size_t i = 0; i < no_blocks; i++)
     {
-        readBinaryFile((char *) (all_blk_meta + offset_for_pointer), sizeof(block_meta<T>) ,offset_for_file,column_file);
+        readBinaryFile((char *) (all_blk_meta + i), sizeof(block_meta<T>) ,offset_for_file,column_file);
 
-        offset_for_file += sizeof(block_meta<T>) + (sizeof(data<T>) * 100); 
-        offset_for_pointer += sizeof(block_meta<T>);
+        offset_for_file +=  block_size; 
     }
 
 
@@ -138,20 +148,22 @@ std::vector<data<T>> * get_data_with_rowid(const std::string &table_name, const 
 
 
 
-    std::string path = get_file_path(table_name,col_name);
 
 
-    std::ifstream col_file(path,std::ios::binary);
+
+    std::ifstream col_file(get_file_path(table_name,col_name),std::ios::binary);
 
 
 
     std::vector<data<T>> * all_data = new std::vector<data<T>>;
     
-
+    std::vector<data<T>> &ad = *all_data;
     for (size_t i = 0; i < all_block_meta.second; i++)
     {
         data<T> * blk_data = get_block_data(col_file, (i+1) , all_block_meta.first[i]);
-        all_data->insert(all_data->end(),blk_data,blk_data+all_block_meta.first[i].count);
+
+        data<T> * data_count = blk_data+(all_block_meta.first[i].count);
+        all_data->insert(all_data->end(),blk_data,data_count);
         delete[] blk_data;
     }
 

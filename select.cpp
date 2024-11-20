@@ -25,11 +25,117 @@ struct comp
     bool operator()(data<T> a, data<T> b){
         if (order == ASC)
         {
-            return (b.data) > (a.data);   
+            return b.data > a.data;   
         }
-        return (b.data) < (a.data);
+        return b.data < a.data;
     }
 };
+
+void *get_data_from_table(const std::string &t_name, const std::string &col_name, std::vector<int> &row_id) {
+
+
+    
+
+
+    auto col_meta = get_column_meta(t_name,col_name);
+
+
+
+    switch (col_meta->data_type) {
+        case DBINT:{
+            auto full_col_meta = get_all_block_meta<int>(t_name,col_name);
+            
+            break;
+        };
+        case DBCHAR:{
+            auto full_col_meta = get_all_block_meta<int>(t_name,col_name);
+            
+            break;
+        };
+
+        case DBLONG:{
+            auto full_col_meta = get_all_block_meta<int>(t_name,col_name);
+            
+            break;
+        };
+
+        case DBDOUBLE:{
+            auto full_col_meta = get_all_block_meta<int>(t_name,col_name);
+            
+            break;
+        };
+
+        case DBSTRING:{
+            auto full_col_meta = get_all_block_meta<int>(t_name,col_name);
+            
+            break;
+        };
+
+        case DBFLOAT:{
+            auto full_col_meta = get_all_block_meta<int>(t_name,col_name);
+            
+            break;
+        };
+
+        default:{
+            auto full_col_meta = get_all_block_meta<int>(t_name,col_name);
+            
+            break;
+        };
+    }
+
+    return nullptr;
+}
+
+/* 
+ * Converts a vector of integers into ranges. 
+ * Consecutive numbers are grouped as "start-end", non-consecutive numbers are individual ranges.
+ * Example: {1,2,3,5,6,7,8,10,11,12,13,16} -> {1-3, 5-8, 10-13, 16}
+ */
+
+std::vector<std::pair<int, int>> convertToRanges(const std::vector<int>& nums) {
+    std::vector<std::pair<int, int>> ranges;
+    if (nums.empty()) return ranges;
+
+    int start = nums[0];
+    int end = nums[0];
+
+    for (size_t i = 1; i < nums.size(); ++i) {
+        if (nums[i] == nums[i - 1] + 1) {
+            
+            end = nums[i];  
+        } else {
+            
+            ranges.push_back({start, end});
+            start = end = nums[i];  
+        }
+    }
+
+    ranges.push_back({start, end});
+    
+    return ranges;
+}
+
+template <typename T>
+void read_data_with_row_id_range(std::ifstream &file,const std::pair<int,int> &range, char* buffer){
+
+    int size;
+
+    int block_no = (range.first/records_limit);
+    int data_count;
+
+    int out_of_record_limit = 0;
+
+    size = range.first - range.second + 1;
+
+    if (block_no != range.second/records_limit)
+    {
+        out_of_record_limit  = (block_no+1) * 100;
+    }
+
+    int offset = sizeof(column_meta) + ((sizeof(block_meta<T>) + (sizeof(data<T>) * 100)) * block_no)   + sizeof(block_meta<T>);
+    readBinaryFile(buffer,size, offset,file);
+}
 
 //Top n sort
 template<typename T>
@@ -220,19 +326,12 @@ template<typename T>
 RowID_vector limit_data(const std::string & table_name, const std::string &col_name, LimitNode *l_node = nullptr){
     RowID_vector result = new std::vector<int>();
 
-    std::vector<data<T>> * data_to_sort = get_data_with_rowid<T>(table_name,col_name,nullptr);
-
-
-    std::cout <<"--------------------------------------" << std::endl;
+    std::vector<data<T>> * data_to_limit = get_data_with_rowid<T>(table_name,col_name,nullptr);
     
-    for (data<T> &i : (*data_to_sort))
+    for (data<T> &i : (*data_to_limit))
     {
-        result->push_back(i.row_id);
-
-
-        std::cout << i.data << std::endl;
+        result->push_back(i.row_id);        
     }
-    std::cout <<"--------------------------------------" << std::endl;
 
 
     if ( (l_node != nullptr) && ( l_node->limit < result->size()))
@@ -240,7 +339,7 @@ RowID_vector limit_data(const std::string & table_name, const std::string &col_n
         result->resize(l_node->limit);
     }
     
-    delete data_to_sort;
+    delete data_to_limit;
 
     return result;
 }
@@ -336,12 +435,6 @@ RowID_vector execute(const QueryNode &q_node){
         result = get_limit_data(table_name,columns[0], q_node.limitNode);
     }
     
-    
-    for (size_t i = 0; i < result->size(); i++)
-    {
-        std::cout << result->at(i) << std::endl;
-    }
-    
 
 
 
@@ -354,7 +447,7 @@ int main(int argc, char const *argv[])
     get_home_folder();
     QueryNode qn;
 
-    std::vector<std::string> cols = {"Tadano", "Tadano"};
+    std::vector<std::string> cols = {"Komi"};
     std::string t_name = "kcc"; 
 
     qn.selectNode.columns = cols;
@@ -367,18 +460,18 @@ int main(int argc, char const *argv[])
     FilterNode rn(&left,&right,AND);
 
 
-    qn.filterNode = &rn;
+    // qn.filterNode = &rn;
 
 
     SortNode sn("Tadano",DESC);
 
-    qn.sortNode = &sn;
+    // qn.sortNode = &sn;
 
 
     RowID_vector res =  execute(qn);
 
 
-    std::vector<data<float>> * data_to_sort = get_data_with_rowid<float>(t_name,cols[0],res);
+    std::vector<data<int>> * data_to_sort = get_data_with_rowid<int>(t_name,cols[0],res);
 
     for (auto &&i : *data_to_sort)
     {

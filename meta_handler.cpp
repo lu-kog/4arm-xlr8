@@ -27,7 +27,6 @@ column_meta * get_column_meta(const std::string &table_name, const std::string &
     int size = sizeof(column_meta);
     column_meta *col_met = new column_meta;
 
-
     std::string relative_path = table_name +"/"+column_name;
 
     readBinaryFile(get_path()+relative_path ,(char *) col_met , size, 0);

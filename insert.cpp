@@ -29,7 +29,7 @@ void insertIntoTable(std::vector<column_obj> & columns_to_insert, std::string& t
 
     for (int i = 0; i < columns_to_insert.size(); i++)
     {
-        std::string col_name = table_schema.fields[i].second; // While creating for thread handle the col_name scope; 
+        std::string col_name(table_schema.fields[i].second, table_schema.fields[i].first); // While creating for thread handle the col_name scope; 
         createBlocks(columns_to_insert.at(i), table_name, col_name);
     }
     
@@ -45,7 +45,10 @@ void createBlocks(column_obj & clm, std::string& table_name, std::string& col_na
     switch (data_type) {
         case DBINT:
             processColumnData<int>(*clm.all_data.int_data, table_name, col_name);
-            break;
+
+            {auto vec = *clm.all_data.int_data;
+            break;}
+            
         case DBCHAR:
             processColumnData<char>(*clm.all_data.char_data, table_name, col_name);
             break;
@@ -75,7 +78,7 @@ void processColumnData(std::vector<data<T>> &newRecords, std::string& table_name
     column_meta * col_meta = get_column_meta(table_name, col_name);
 
     std::vector<block_obj<T>> new_blocks;
-    
+
     auto it = newRecords.begin();
 
     bool is_string = typeid(T) == typeid(Dbstr);
@@ -85,20 +88,20 @@ void processColumnData(std::vector<data<T>> &newRecords, std::string& table_name
         block_obj<T> * lastBlock = readIncompleteBlockFromFile<T>(*col_meta, table_name, col_name);
 
         while (lastBlock->all_data.size() < records_limit && it != newRecords.end()) {
-            lastBlock->all_data.push_back(*it++);
+            lastBlock->all_data.push_back(*it);
 
             // Meta updation.. skip if it string
             if (!is_string)
             {
-                if ((it->data) > lastBlock->meta.max)
+                if (it->data > lastBlock->meta.max)
                 {
                     lastBlock->meta.max = it->data;
-                }else if ((it->data) < lastBlock->meta.min)
+                }else if (it->data < lastBlock->meta.min)
                 {
                     lastBlock->meta.min = it->data;
                 }
             }
-            
+            it++;
             
         }
 
@@ -110,12 +113,18 @@ void processColumnData(std::vector<data<T>> &newRecords, std::string& table_name
         delete lastBlock;
     }
 
+    auto begin = newRecords.begin();
+    auto end = newRecords.end();
+
+
+
+
     // Process remaining records in blocks of 100
-    while (it != newRecords.end()) {
+    while (it != end) {
         block_obj<T> block;
         for (int i = 0; i < records_limit && it != newRecords.end(); i++) {
 
-            block.all_data.push_back(*it++);
+            block.all_data.push_back(*it);
             
             // Meta calculation.. skip if it string
             if (!is_string){
@@ -128,7 +137,7 @@ void processColumnData(std::vector<data<T>> &newRecords, std::string& table_name
                     block.meta.min = it->data;
                 }
             }
-            
+            it++;
         }
 
         block.meta.count = block.all_data.size();
@@ -137,7 +146,18 @@ void processColumnData(std::vector<data<T>> &newRecords, std::string& table_name
 
     }
     
-    int file_offset = sizeof(column_meta) + ((col_meta->no_block - 1) * sizeof(block_meta<T>)) + ((col_meta->no_block - 1) * 100 * sizeof(data<T>));
+    int records_size = records_limit * sizeof(data<T>);
+
+    bool isCompleteDataSet = (col_meta->total_records % 100) == 0;
+
+    // file offset should be starting point of the block.
+    // if pending block, offset is it's starting point
+    // if the column already have some complete blocks, pointer should be next to all the blocks.
+
+    int file_offset = sizeof(column_meta) + ( (isCompleteDataSet ? col_meta->no_block : (col_meta->no_block - 1)) * sizeof(block_meta<T>));
+    file_offset += ( (isCompleteDataSet ? col_meta->no_block : (col_meta->no_block - 1)) * records_size );
+
+
     if (col_meta->no_block == 0)
     {
         file_offset = sizeof(column_meta);
@@ -171,6 +191,7 @@ void dump_new_records(std::vector<block_obj<T>> & new_blocks, std::string &table
     char * buffer =  (char *) malloc(buffer_size);
     int offset = 0;
 
+
     for (block_obj<T> blk : new_blocks)
     {
         memcpy(buffer+offset, &blk.meta, block_meta_size);
@@ -200,7 +221,7 @@ block_obj<T> * readIncompleteBlockFromFile(const column_meta& col_meta, std::str
     // read last block meta
     readBinaryFile(file_path, (char*) (&lastBlock->meta), sizeof(block_meta<T>), offset);
 
-    std::vector<data<T>> tempData(100); // allocate for 100 entries (per block)
+    std::vector<data<T>> tempData(lastBlock->meta.count); // allocate for 100 entries (per block)
     
     // read from the point next to the block meta to count of entries.
     readBinaryFile(file_path, (char*) (tempData.data()), lastBlock->meta.count * sizeof(data<T>), offset + sizeof(block_meta<T>));
@@ -209,6 +230,67 @@ block_obj<T> * readIncompleteBlockFromFile(const column_meta& col_meta, std::str
 
     return lastBlock;
 }
+
+
+
+
+
+void print_data(column_obj column){
+    switch (column.meta.data_type)
+    {
+    case DBINT:
+        std::cout<<"Int"<<"\n";
+        for (size_t i = 0; i < column.meta.total_records; i++)
+        {
+            std::cout<<column.all_data.int_data[0][i].row_id<<std::endl;
+        }
+        break;
+    case DBCHAR:
+        std::cout<<"Char"<<"\n";
+        for (size_t i = 0; i < column.meta.total_records; i++)
+        {
+            std::cout<<column.all_data.char_data[0][i].data<<std::endl;
+        }
+        break;
+    case DBLONG:
+        std::cout<<"Long"<<"\n";
+        for (size_t i = 0; i < column.meta.total_records; i++)
+        {
+            std::cout<<column.all_data.long_data[0][i].data<<std::endl;
+        }
+        break;
+    case DBDOUBLE:
+        std::cout<<"Double"<<"\n";
+        for (size_t i = 0; i < column.meta.total_records; i++)
+        {
+            std::cout<<column.all_data.double_data[0][i].data<<std::endl;
+        }
+        break;
+    case DBSTRING:
+        std::cout<<"String"<<"\n";
+
+        for(size_t i = 0; i < column.meta.total_records; i++)
+        {
+            std::cout<< column.all_data.str_data[0][i].data.file <<"\t" << column.all_data.str_data[0][i].data.offset_start <<"\t"<<  column.all_data.str_data[0][i].data.size  <<std::endl;
+        }
+        break;
+    case DBFLOAT:
+        std::cout<<"Float"<<"\n";
+        for (size_t i = 0; i < column.meta.total_records; i++)
+        {
+            std::cout<<column.all_data.float_data[0][i].data<<std::endl;
+        }
+        break;
+    
+    default:
+        break;
+    }
+
+    
+    
+}
+
+
 
 
 void insert(std::string table_name, std::string csv_path){
@@ -221,7 +303,6 @@ void insert(std::string table_name, std::string csv_path){
 
     std::vector<column_obj> table_data; 
     type_casting(*parsed,*schema, table_data,table_name);
-
     insertIntoTable(table_data,table_name, *schema);
 
 
@@ -242,7 +323,7 @@ int main(int argc, char const *argv[])
 
 
 
-#if 0
+#if 1
     std::string tableName = "kcc";
     int numColumns;
     std::vector<std::string> columnNames = {"Komi", "Najimi", "Tadano"};

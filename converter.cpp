@@ -124,8 +124,11 @@ std::vector<column_obj> &type_casting(std::vector<std::string> &data_as_string, 
 
     int number_of_data = data_as_string.size();
 
-
-    column_meta * column_meta = get_column_meta(table_name,schema_for_table.fields->second);
+    //creating a column name as string without the help of \0;
+    std::string col_name (schema_for_table.fields->second,schema_for_table.fields->first);
+    // col_name.resize();
+    std::cout << col_name << std::endl;
+    column_meta * column_meta = get_column_meta(table_name,col_name);
 
     int initaial_row_id = column_meta->total_records;
 
