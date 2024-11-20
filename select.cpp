@@ -25,9 +25,9 @@ struct comp
     bool operator()(data<T> a, data<T> b){
         if (order == ASC)
         {
-            return b.data > a.data;   
+            return (b.data) > (a.data);   
         }
-        return b.data < a.data;
+        return (b.data) < (a.data);
     }
 };
 
