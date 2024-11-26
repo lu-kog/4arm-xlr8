@@ -152,6 +152,7 @@ bool meta_check(FilterNode & f_node,T min, T max)
 
 }
 
+
 template <typename T>
 RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vector rows_to_process) {
 
@@ -171,62 +172,68 @@ RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vecto
         
     }
     
-    // get data for selected blocks
-    std::vector<data<T>> * full_data = get_block_data(table_name, this->columnName, selected_blocks, meta_array);
-    
-    delete meta_array.first; // clear block metas
-
-
-    // skip row Ids
-    std::unordered_set<int> filterSet;
+    std::unordered_set<int> filterSet;  // for hashtable only
     if (rows_to_process)
     {
         filterSet = std::unordered_set<int>(rows_to_process->begin(), rows_to_process->end());
     }
-    
-    std::cout << "----------------" << std::endl;
+
+
     RowID_vector result = new std::vector<int>();
-    for (int i = 0; i < full_data->size(); i++)
+    
+    const int VECTORIZE_LIMIT = 100;  // 100 blocks data at a time
+
+
+    for (int i = 0; i< selected_blocks.size(); i += std::min(i + VECTORIZE_LIMIT, static_cast<int>(i - selected_blocks.size())))
     {
-        data<T> &d = full_data->at(i);
+        int batch_end = std::min(i + VECTORIZE_LIMIT, static_cast<int>(i - selected_blocks.size()));
+
+        block_meta<T> & current_block_meta = meta_array.first[i];
+        auto it = selected_blocks.begin()+i;
+        std::vector<int> current_batch(it, it+batch_end);  
+        std::vector<data<T>> * current_batch_data = get_block_data(table_name, this->columnName, current_batch, meta_array);
+
+        std::vector<int> filtered_ids;
+        filtered_ids.reserve(current_batch_data->size());
+
         T filter_value;
-
-        switch (this->data_type)
-        {
-        case DBCHAR:
-            filter_value = this->value.c;
-            break;
-        case DBINT:
-            filter_value = this->value.i;
-            break;
-        case DBLONG:
-            filter_value = this->value.l;
-            break;
-        case DBFLOAT:
-            filter_value = this->value.f;
-            break;
-        case DBDOUBLE:
-            filter_value = this->value.d;
-            break;
+        switch (this->data_type) {
+            case DBCHAR:
+                filter_value = this->value.c;
+                break;
+            case DBINT:
+                filter_value = this->value.i;
+                break;
+            case DBLONG:
+                filter_value = this->value.l;
+                break;
+            case DBFLOAT:
+                filter_value = this->value.f;
+                break;
+            case DBDOUBLE:
+                filter_value = this->value.d;
+                break;
         }
 
-
-        if (rows_to_process==nullptr || filterSet.count(d.row_id) )
-        {
-            if (compute(filter_value, d.data, this->conditionType))
-            {
-                std::cout << d.data << std::endl;
-                result->push_back(d.row_id);
+        for (const data<T>& d : *current_batch_data) {
+            // Apply row filtering if applicable
+            if (!rows_to_process || filterSet.count(d.row_id)) {
+                // Apply condition check
+                if (compute(filter_value, d.data, this->conditionType)) {
+                    filtered_ids.push_back(d.row_id);
+                }
             }
-            
         }
+
+        // Append the filtered row IDs to the result
+        result->insert(result->end(), filtered_ids.begin(), filtered_ids.end());
+
+        delete current_batch_data;
+
+        
         
     }
     
-    std::cout << "----------------" << std::endl;
-
-    // clear memory
-    delete full_data;
 
     return result;
 }
