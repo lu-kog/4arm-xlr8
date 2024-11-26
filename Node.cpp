@@ -184,9 +184,10 @@ RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vecto
     const int VECTORIZE_LIMIT = 100;  // 100 blocks data at a time
 
 
-    for (int i = 0; i< selected_blocks.size(); i += std::min(i + VECTORIZE_LIMIT, static_cast<int>(i - selected_blocks.size())))
+    int batch_end = 0;
+    for (int i = 0; i< selected_blocks.size(); i += batch_end)
     {
-        int batch_end = std::min(i + VECTORIZE_LIMIT, static_cast<int>(i - selected_blocks.size()));
+        batch_end = std::min(i + VECTORIZE_LIMIT, static_cast<int>(selected_blocks.size() - i));
 
         block_meta<T> & current_block_meta = meta_array.first[i];
         auto it = selected_blocks.begin()+i;
