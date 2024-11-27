@@ -25,12 +25,15 @@ void dump_new_records(std::vector<block_obj<T>> & new_blocks, std::string &table
 template <typename T>
 block_obj<T> * readIncompleteBlockFromFile(const column_meta& col_meta, std::string& table_name, std::string& col_name);
 
-void insertIntoTable(std::vector<column_obj> & columns_to_insert, std::string& table_name, schema_meta & table_schema){
-
-    for (int i = 0; i < columns_to_insert.size(); i++)
-    {
-        std::string col_name(table_schema.fields[i].second, table_schema.fields[i].first); // While creating for thread handle the col_name scope; 
-        createBlocks(columns_to_insert.at(i), table_name, col_name);
+void insertIntoTable(std::vector<column_obj> &columns_to_insert, std::string &table_name, schema_meta &table_schema) {
+    std::vector<std::future<void>> futures;
+    for (int i = 0; i < columns_to_insert.size(); i++) {
+        std::string col_name(table_schema.fields[i].second, table_schema.fields[i].first); // Scope col_name for each thread
+        
+        futures.push_back(std::async(std::launch::async, createBlocks, columns_to_insert.at(i), table_name, col_name));
+    }
+    for (auto &fut : futures) {
+        fut.get();  // Wait for all threads to complete
     }
     
 }
