@@ -14,7 +14,20 @@
 #include "data_fetcher.cpp"
 #include "meta_handler.cpp"
 #include "fileHandler.cpp"
+#include "string_handler.cpp"
 
+struct selected_col_opj{
+    int data_type;
+    union{
+        std::vector<int> *int_data;
+        std::vector<float> *float_data;
+        std::vector<long> *long_data;
+        std::vector<double> *double_data;
+        std::vector<std::string> *str_data;
+        std::vector<char> *char_data;
+    } all_data;
+
+};
 
 template <typename T>
 struct comp
@@ -334,6 +347,126 @@ RowID_vector execute(const QueryNode &q_node){
     return result;
 }
 
+
+template<typename T>
+std::vector<T>* get_data_from_column(const std::string &table_name, const std::string &col_name, RowID_vector row_id){
+
+    std::vector<data<T>> * data_from_file = get_data_with_rowid<T>(table_name,col_name,row_id);
+
+    std::vector<T> * data_to_project = new std::vector<T>;
+
+    for (size_t i = 0; i < data_from_file->size(); i++)
+    {
+        data_to_project->push_back((*data_from_file)[i].data);
+    }
+    delete data_from_file;
+    
+    return data_to_project;
+
+}
+
+template<>
+std::vector<std::string>* get_data_from_column<std::string>(const std::string &table_name, const std::string &col_name, RowID_vector row_id) {
+    std::vector<data<Dbstr>> * data_from_file = get_data_with_rowid<Dbstr>(table_name,col_name,row_id);
+
+    std::vector<std::string> * data_to_project = new std::vector<std::string>;
+    for (size_t i = 0; i < data_from_file->size(); i++)
+    {
+        data_to_project->push_back(str_file_reader(table_name,(*data_from_file)[i].data));
+    }
+    
+    return data_to_project;
+
+
+}
+
+
+
+
+
+selected_col_opj get_data_from_column(const std::string &table_name, const std::string &col_name, RowID_vector row_ids){
+    column_meta * col_meta = get_column_meta(table_name,col_name);
+
+    selected_col_opj col_obj;
+     switch (col_meta->data_type) {
+        case DBINT:{
+            col_obj.data_type = DBINT;
+            col_obj.all_data.int_data = get_data_from_column<int>(table_name,col_name,row_ids);
+            break;
+        };
+        case DBCHAR:{
+            col_obj.data_type = DBCHAR;
+            col_obj.all_data.char_data = get_data_from_column<char>(table_name,col_name,row_ids);
+             break;   
+        };
+
+        case DBLONG:{
+            col_obj.data_type = DBLONG;
+            col_obj.all_data.long_data = get_data_from_column<long>(table_name,col_name,row_ids);
+            break;
+        };
+
+        case DBDOUBLE:{
+            col_obj.data_type = DBDOUBLE;
+            col_obj.all_data.double_data = get_data_from_column<double>(table_name,col_name,row_ids);
+            break;
+        };
+
+        case DBFLOAT:{
+            col_obj.data_type = DBFLOAT;
+            col_obj.all_data.float_data = get_data_from_column<float>(table_name,col_name,row_ids);
+            break;
+        };
+        case DBSTRING:{
+            col_obj.data_type = DBSTRING;
+            col_obj.all_data.str_data = get_data_from_column<std::string>(table_name,col_name,row_ids);
+            break;
+        };
+        default:{
+            throw std::invalid_argument("Unexpected data type in sort node");
+        };
+    }
+    return col_obj;
+}
+
+
+std::vector<selected_col_opj> get_selected_data(SelectNode select, RowID_vector row_ids){
+    std::vector<selected_col_opj> all_data;
+    for (size_t i = 0; i < select.columns.size(); i++)
+    {
+        all_data.push_back(get_data_from_column(select.tableName,select.columns[i], row_ids));
+    }
+    return all_data;
+
+}
+
+
+void print_data_at_index(const selected_col_opj& obj, int index) {
+    switch (obj.data_type) {
+        case DBINT: // int_data
+            std::cout<< (*obj.all_data.int_data)[index] << "\t"<<"|";
+            break;
+        case DBFLOAT: // float_data
+            std::cout <<  (*obj.all_data.float_data)[index] << "\t"<<"|";
+            break;
+        case DBLONG: // long_data
+            std::cout  << (*obj.all_data.long_data)[index] << "\t"<<"|";
+            break;
+        case DBDOUBLE: // double_data
+            std::cout  << (*obj.all_data.double_data)[index] << "\t"<<"|";
+            break;
+        case DBSTRING: // str_data
+            std::cout  << (*obj.all_data.str_data)[index] << "\t"<<"|";
+            break;
+        case DBCHAR: // char_data
+            std::cout<< (*obj.all_data.char_data)[index] << "\t"<<"|";
+            break;
+        default:
+            std::cout << "Unknown data type." << std::endl;
+    }
+}
+
+    
 
 int main(int argc, char const *argv[])
 {
