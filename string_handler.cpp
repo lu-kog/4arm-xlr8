@@ -128,7 +128,16 @@ std::string str_file_reader(const std::string& table_name, const Dbstr& str_info
     return str_data; // Return the read string
 }
 
+Dbstr insert_new_string(const std::string &table_name, std::string str){
+    std::ofstream str_file;
+    int file_no = 1;
+    get_file_to_write(file_no,table_name,str_file);
 
+    Dbstr str_offset = str_file_writer(str_file, str,file_no);
+
+    str_file.close();
+    return str_offset;
+}
 
 
 
