@@ -197,4 +197,32 @@ std::vector<data<T>> * get_data_with_rowid(const std::string &table_name, const 
 
 }
 
+template<typename T>
+std::vector<block_obj<T>> * get_blocks_chunk(std::string table_name, std::string col_name, int block_no, const column_meta &col_meta){
+    std::string file_path = get_file_path(table_name, col_name);
+    
+    std::pair<block_meta<T> *, int> all_blk_meta = get_all_block_meta(table_name, col_name);
+    
+    int last_block_no = ((col_meta.no_block - block_no) > BLOCK_LIMIT)?(block_no+BLOCK_LIMIT):col_meta.no_block;
+
+    std::ifstream file(file_path, std::ios::binary);
+
+    std::vector<block_obj<T>> *blocks_with_data = new std::vector<block_obj<T>>;
+    for (size_t i = block_no; i < last_block_no; i++)
+    {
+        block_obj<T> blk;
+        blk.meta = all_blk_meta.first[i-1];
+
+        std::vector<data<T>> * blk_data = get_block_data(file,i,blk.meta);
+        blk.all_data.swap(*blk_data);
+        blocks_with_data.push_back(blk);
+        delete blk_data;
+    }
+
+    file.close();
+    delete all_blk_meta;
+    
+    return blocks_with_data;
+}
+
 #endif

@@ -311,6 +311,12 @@ void insert(std::string table_name, std::string csv_path){
 
 }
 
+template<typename T>
+void dump_blocks_chunk(std::string table_name, std::string col_name, std::vector<block_obj<T>> & data_chunk, int block_no){
+    int file_offset = sizeof(column_meta) + ((block_no-1) * sizeof(block_meta<T>));
+    file_offset +=  (block_no-1) * sizeof(data<T>);
+    dump_new_records(data_chunk, table_name,col_name,file_offset);
+}
 
 
 
