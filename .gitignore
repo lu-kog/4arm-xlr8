@@ -1,0 +1,5 @@
+.git/
+.vscode/
+a.out
+app
+obj/
