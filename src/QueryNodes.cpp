@@ -50,6 +50,7 @@ void insertIntoTable(std::vector<column_obj> &columns_to_insert, std::string &ta
             catch(const std::exception& e)
             {
                 gotError = true;
+                std::cout << e.what() << std::endl;
             } 
         }
 
@@ -66,6 +67,19 @@ void insertIntoTable(std::vector<column_obj> &columns_to_insert, std::string &ta
     }
     
 }
+
+#if 0
+// Single threaded insertion
+void insertIntoTable(std::vector<column_obj> & columns_to_insert, std::string& table_name, schema_meta & table_schema){
+    for (int i = 0; i < columns_to_insert.size(); i++)
+    {
+        std::string col_name(table_schema.fields[i].second, table_schema.fields[i].first); // While creating for thread handle the col_name scope; 
+        createBlocks(columns_to_insert.at(i), table_name, col_name);
+
+    }
+}
+#endif
+
 
 
 std::vector<column_obj> &type_casting(std::vector<std::string> &data_as_string, schema_meta &schema_for_table, std::vector<column_obj> &table_data, const std::string &table_name)
@@ -162,13 +176,25 @@ std::vector<column_obj> &type_casting(std::vector<std::string> &data_as_string, 
 void insert(std::string table_name, std::string csv_path){
     std::ifstream csvFile(csv_path);
 
-    std::vector<std::string> * parsed = parseCSV(csvFile);
-
     schema_meta * schema = read_schema(table_name);
 
-    std::vector<column_obj> table_data; 
-    type_casting(*parsed,*schema, table_data,table_name);
-    insertIntoTable(table_data,table_name, *schema);
+
+    while (!csvFile.eof())
+    {
+        std::vector<std::string> * parsed = parseCSV(csvFile);
+        std::vector<column_obj> table_data; 
+        type_casting(*parsed,*schema, table_data,table_name);
+        insertIntoTable(table_data,table_name, *schema);
+
+        for (size_t i = 0; i < schema->number_of_columns; i++)
+        {
+            std::string col_name(schema->fields[i].second,schema->fields[i].first);
+            column_meta * col_met = get_column_meta(table_name,col_name);
+            delete col_met;
+        }
+        
+    }
+    
 
     delete schema;
 }
@@ -879,7 +905,7 @@ void mark_as_deleted(QueryNode &qn, RowID_vector & rows_to_delete){
 
         if (gotError)
         {
-            throw std::runtime_error("Error on insertion");
+            throw std::runtime_error("Error on deletion.");
         }
         
     }
@@ -943,7 +969,6 @@ void execute_delete(QueryNode &qn){
 
 
 void execute_update(QueryNode &qn){
-    std::cout << "Update Query!" << std::endl;
     /* 
     * backup old data
     * apply filter, sort, limit
@@ -956,11 +981,9 @@ void execute_update(QueryNode &qn){
     RowID_vector filtered_rows = run_query_nodes(qn);
 
     column_meta * temp_col = get_column_meta(table_name, qn.selectNode.columns[0]);
-    std::cout << filtered_rows->size()<<" filtered rows." << std::endl;
     try
     {
         to_update_records(table_name,qn.selectNode.columns.at(0),UPDATE, temp_col->data_type,filtered_rows, &qn);
-        std::cout << filtered_rows->size() << " rows updated." << std::endl;
     }
     catch(const std::exception& e)
     {
@@ -1007,7 +1030,6 @@ void update_records(std::string table_name, std::string col_name, QueryType qt, 
     int chunk_block_no = 1;
     std::vector<block_obj<T>> * data_chunk = get_blocks_chunk<T>(table_name, col_name, chunk_block_no, *col_meta);
 
-    std::cout << "Got block chunks: " << data_chunk->size()<< " ROws: " << data_chunk->at(0).all_data.size() <<  std::endl;
 
     for (int &i : *rows_to_modify)
     {   
@@ -1050,7 +1072,6 @@ void update_records(std::string table_name, std::string col_name, QueryType qt, 
 
 
 void to_update_records(std::string table_name, std::string col_name, QueryType qt, int data_type, RowID_vector rows_to_modify, QueryNode * qn){
-    std::cout << "Updation on : " << table_name << " - " << col_name << " Data type: " << data_type << std::endl;
     if (qt == UPDATE && qn == nullptr)
         throw std::invalid_argument("Need Query node to update values.");
     

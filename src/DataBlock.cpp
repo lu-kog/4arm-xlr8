@@ -94,13 +94,13 @@ void processColumnData(std::vector<data<T>> &newRecords, std::string& table_name
 
         // update last block meta
         lastBlock->meta.count = lastBlock->all_data.size();
-        col_meta->no_block -=1;
+        col_meta->no_block -=1;  // decreasing this block because, should not consider this block in offset calc.
         
         new_blocks.push_back(*lastBlock);
         delete lastBlock;
     }
 
-    auto begin = newRecords.begin();
+
     auto end = newRecords.end();
 
 
@@ -134,15 +134,13 @@ void processColumnData(std::vector<data<T>> &newRecords, std::string& table_name
     }
     
     int records_size = RECORDS_LIMIT * sizeof(data<T>);
-
-    bool isCompleteDataSet = (col_meta->total_records % 100) == 0;
+    int block_meta_size = sizeof(block_meta<T>);
 
     // file offset should be starting point of the block.
     // if pending block, offset is it's starting point
     // if the column already have some complete blocks, pointer should be next to all the blocks.
 
-    int file_offset = sizeof(column_meta) + ( (isCompleteDataSet ? col_meta->no_block : (col_meta->no_block - 1)) * sizeof(block_meta<T>));
-    file_offset += ( (isCompleteDataSet ? col_meta->no_block : (col_meta->no_block - 1)) * records_size );
+    int file_offset = sizeof(column_meta) + (col_meta->no_block * block_meta_size) + (col_meta->no_block * records_size);
 
 
     if (col_meta->no_block == 0)
@@ -161,6 +159,7 @@ void processColumnData(std::vector<data<T>> &newRecords, std::string& table_name
         clear memory()
     */
     
+   
    write_column_meta(table_name, col_name, *col_meta);
    dump_new_records(new_blocks, table_name, col_name, file_offset);
 
@@ -189,7 +188,6 @@ void dump_new_records(std::vector<block_obj<T>> & new_blocks, std::string &table
     
     std::string fileName = get_path() + table_name + "/"+col_name;
     
-    std::cout << new_blocks.size() << " new blocks written." << std::endl;
     writeBinaryFile(fileName,buffer, buffer_size, file_offset);
     
     delete buffer;

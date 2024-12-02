@@ -97,7 +97,6 @@ column_meta * get_column_meta(const std::string &table_name, const std::string &
     column_meta *col_met = new column_meta;
 
     std::string relative_path = table_name +"/"+column_name;
-
     readBinaryFile(get_path()+relative_path ,(char *) col_met , column_meta_size, 0);
 
     return col_met;
@@ -106,7 +105,6 @@ column_meta * get_column_meta(const std::string &table_name, const std::string &
 
 void write_column_meta(const std::string &table_name, const std::string &column_name , column_meta &col_meta_to_write){
     std::string relative_path = table_name +"/"+column_name;
-    std::cout << "Column meta written:" << col_meta_to_write.no_block << " - " << col_meta_to_write.total_records << std::endl;
     writeBinaryFile(get_path()+relative_path, (char *) &col_meta_to_write, sizeof(col_meta_to_write) , 0);
 }
 

@@ -52,7 +52,7 @@ bool delete_folder(const std::string& folder_path) {
 
         return true;
     } catch (const fs::filesystem_error& e) {
-        std::cerr << "Error deleting folder: " << e.what() << std::endl;
+        throw std::runtime_error("Error deleting folder");
     }
     return false;
 }
@@ -76,7 +76,8 @@ void readBinaryFile(const std::string &filename, char *buffer, long long size, i
     }
     catch (const std::ios_base::failure &e)
     {
-        std::cerr << "Error reading from file: " << e.what() << std::endl;
+        std::string err_name(e.what());
+        throw std::runtime_error( "Error reading from file: "+err_name);
     }
 }
 
@@ -96,7 +97,9 @@ void readBinaryFile(char *buffer, long long size, int offset, std::ifstream &inF
     }
     catch (const std::ios_base::failure &e)
     {
-        std::cerr << "Error reading from file: " << e.what() << std::endl;
+        std::string err_name(e.what());
+        throw std::runtime_error( "Error reading from file: "+err_name);
+
     }
 }
 
@@ -131,7 +134,8 @@ void writeBinaryFile(const std::string &filename, const char *buffer, long long 
     }
     catch (const std::ios_base::failure &e)
     {
-        std::cerr << "Error writing to a file: " << e.what() << '\n';
+        std::string err_name(e.what());
+        throw std::runtime_error( "Error writing to a file: "+err_name);
     }
 }
 

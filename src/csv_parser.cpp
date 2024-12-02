@@ -3,7 +3,7 @@
 #ifndef _CSVParser
 #define _CSVParser 0
 
-#define buffer_limit 10*1024*1024    //10 MB
+#define buffer_limit 5*1024    //1 MB
 
 #include <iostream>
 #include <fstream>
@@ -26,8 +26,11 @@ std::vector<std::string> * parseCSV(std::ifstream &file) {
     std::string line;
     bool limitReached = false;
 
+    int line_count=0;
+
     // Read CSV line by line
     while ((!limitReached) && std::getline(file, line)) {
+        line_count++;
         bool insideQuotes = false;
         std::string temp;
         current_buffer += line.size();
