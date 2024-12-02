@@ -322,6 +322,8 @@ std::vector<data<T>> * get_data_with_rowid(const std::string &table_name, const 
 
         all_data->swap(temp_vec);
     }
+    remove_deleted_values(all_data);
+    
     col_file.close();  
 
     return all_data;    
