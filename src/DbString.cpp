@@ -1,26 +1,9 @@
-#ifndef file_han 
-
-#define file_han 69
+#include "../include/DbString.h"
 
 
-#include <fstream>
-#include <filesystem>
-#include "meta.h"
-#include "fileHandler.cpp"
-#include "cred.cpp"
-#include <string>
-
-#define FILE_LIMIT 1024*1024*10 
-
-
-
-struct{
-    int file_no_for_str = 0;
-    std::ifstream file_for_str;
-}file_to_make_non_rep_string;
-
-
-
+std::ostream &operator<<(std::ostream & os, Dbstr str){
+    return os;
+}
 
 void get_file_to_write(int &file_no, std::string table_name , std::ofstream &outFile){
 
@@ -37,7 +20,7 @@ void get_file_to_write(int &file_no, std::string table_name , std::ofstream &out
         // If the file doesn't exist, open it with std::ios::out to create it
         outFile.open(file_name, std::ios::binary | std::ios::out);
     }
-    int f_size = get_size(file_name );
+    int f_size = get_size(file_name);
 
 
     if (f_size > FILE_LIMIT)
@@ -47,12 +30,8 @@ void get_file_to_write(int &file_no, std::string table_name , std::ofstream &out
         get_file_to_write(file_no, table_name,outFile);
     }
     
-    // return *outFile;
-
 
 }
-
-
 
 Dbstr str_file_writer(std::ofstream &outFile, std::string str,const int file_no){
     
@@ -71,7 +50,6 @@ Dbstr str_file_writer(std::ofstream &outFile, std::string str,const int file_no)
     return str_struct;
 }
 
-
 void string_write_file_size_check(int &file_no, std::string table_name, std::ofstream &str_file_obj){
     const std::string file_name =  get_path()+table_name  + "/string_" + std::to_string(file_no);
 
@@ -87,10 +65,6 @@ void string_write_file_size_check(int &file_no, std::string table_name, std::ofs
     }
     
 }
-
-
-
-
 
 std::string str_file_reader(const std::string& table_name, const Dbstr& str_info) {
 
@@ -128,6 +102,7 @@ std::string str_file_reader(const std::string& table_name, const Dbstr& str_info
     return str_data; // Return the read string
 }
 
+
 Dbstr insert_new_string(const std::string &table_name, std::string str){
     std::ofstream str_file;
     int file_no = 1;
@@ -138,55 +113,3 @@ Dbstr insert_new_string(const std::string &table_name, std::string str){
     str_file.close();
     return str_offset;
 }
-
-
-
-#if 0
-
-
-//testing
-int main(int argc, char const *argv[])
-{
-
-    get_home_folder();
-
-
-
-#if 0
-
-    int file_no = 1;
-    
-    std::ofstream & str_file = get_file_to_write(file_no,"kcc");
-    
-    Dbstr str = str_file_writer(str_file, "jith", file_no);
-
-
-    closeFile(str_file);
-
-
-    std::cout <<"file: " << str.file << "  offset: "<<str.offset_start <<"   size: "<< str.size << std::endl;
-
-#endif
-
-
-#if 1
-    Dbstr str_info;
-
-    str_info.file = 1;
-
-    str_info.offset_start = 0;
-
-    str_info.size = 5;
-
-    std::cout << str_file_reader("kcc",str_info) << std::endl;
-
-#endif  
-    
-
-
-    return 0;
-}
-
-#endif
-
-#endif
