@@ -3,5 +3,5 @@
 obj/
 a.out
 app
-srt/Main
-
+src/Main
+srt/Main.cpp
