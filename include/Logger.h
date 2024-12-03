@@ -23,7 +23,10 @@
 #define PRINT_TIME_TAKEN(msg, t) std::cout << msg << t << std::endl;
 /*---------------------------------------------------------------------*/
 
-#define MAKE_LOG(lvl, message) Logger::getInstance().log(Logger::LogLevel::lvl, (message))
+#define LOG_DEBUG(message) Logger::getInstance().log(Logger::LogLevel::DEBUG, (message))
+#define LOG_INFO(message) Logger::getInstance().log(Logger::LogLevel::INFO, (message))
+#define LOG_WARN(message) Logger::getInstance().log(Logger::LogLevel::WARNING, (message))
+#define LOG_ERROR(message) Logger::getInstance().log(Logger::LogLevel::ERROR, (message))
 
 
 /*---------------------------------------------------------------------*/

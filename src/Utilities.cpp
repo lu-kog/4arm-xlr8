@@ -48,7 +48,7 @@ bool delete_folder(const std::string& folder_path) {
     try {
         // Check if the folder exists
         if (!fs::exists(folder_path)) {
-            MAKE_LOG(ERROR, "Delete Folder: Folder does not exist - " + folder_path);
+            LOG_ERROR("Delete Folder: Folder does not exist - " + folder_path);
             return false;
         }
 
@@ -58,7 +58,7 @@ bool delete_folder(const std::string& folder_path) {
         return true;
     } catch (const fs::filesystem_error& e) {
         std::string err_name = e.what();
-        MAKE_LOG(ERROR, "Error deleting folder - " + folder_path + err_name);
+        LOG_ERROR("Error deleting folder - " + folder_path + err_name);
         throw std::runtime_error("Error deleting folder");
     }
     return false;
@@ -84,7 +84,7 @@ void readBinaryFile(const std::string &filename, char *buffer, long long size, i
     catch (const std::ios_base::failure &e)
     {
         std::string err_name(e.what());
-        MAKE_LOG(ERROR, "Error reading binary - " + filename + err_name);
+        LOG_ERROR("Error reading binary - " + filename + err_name);
         throw std::runtime_error( "Error reading from file: "+err_name);
     }
 }
@@ -106,7 +106,7 @@ void readBinaryFile(char *buffer, long long size, int offset, std::ifstream &inF
     catch (const std::ios_base::failure &e)
     {
         std::string err_name(e.what());
-        MAKE_LOG(ERROR, "Error reading binary - " + err_name);
+        LOG_ERROR("Error reading binary - " + err_name);
         throw std::runtime_error( "Error reading from file: "+err_name);
 
     }
@@ -144,7 +144,7 @@ void writeBinaryFile(const std::string &filename, const char *buffer, long long 
     catch (const std::ios_base::failure &e)
     {
         std::string err_name(e.what());
-        MAKE_LOG(ERROR, "Error writing to a file - " + filename + err_name);
+        LOG_ERROR("Error writing to a file - " + filename + err_name);
         throw std::runtime_error( "Error writing to a file: "+err_name);
     }
 }
@@ -170,13 +170,13 @@ void Roll_Back(const std::string& table_name) {
 
             // Restore from backup
             fs::copy(backup_path, table_path, fs::copy_options::recursive | fs::copy_options::overwrite_existing);
-            MAKE_LOG(INFO, "Rollback completed for table - " + table_name);
+            LOG_INFO("Rollback completed for table - " + table_name);
         } else {
-            MAKE_LOG(ERROR, "No backup found for table - " + table_name);
+            LOG_ERROR("No backup found for table - " + table_name);
         }
     } catch (const fs::filesystem_error& e) {
         std::string err_name(e.what());
-        MAKE_LOG(ERROR, "Error on rollback for table - " + table_name);
+        LOG_ERROR("Error on rollback for table - " + table_name);
     }
 }
 
@@ -196,10 +196,10 @@ void backup_table_data(const std::string& table_name) {
         if (fs::exists(table_path)) {
             fs::copy(table_path, backup_path, fs::copy_options::recursive | fs::copy_options::overwrite_existing);
         } else {
-            MAKE_LOG(ERROR, "Table Data not found to backup. Table - " + table_name);
+            LOG_ERROR("Table Data not found to backup. Table - " + table_name);
         }
     } catch (const fs::filesystem_error& e) {
-        MAKE_LOG(ERROR, "Error on backup for table - " + table_name);
+        LOG_ERROR("Error on backup for table - " + table_name);
     }
 }
 
@@ -221,6 +221,3 @@ RowID_vector mergeAndRemoveDuplicates(RowID_vector filtered_left_row, RowID_vect
 
 
 /*-----------------------------------------------------------------------*/
-
-// Comparators
-
