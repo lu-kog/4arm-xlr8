@@ -8,7 +8,7 @@ INCDIR = include
 TARGET = app
 
 # Source and Object Files
-SRCS = $(SRCDIR)/Utilities.cpp $(SRCDIR)/csv_parser.cpp $(SRCDIR)/Schema.cpp \
+SRCS = $(SRCDIR)/Utilities.cpp $(SRCDIR)/Logger.cpp $(SRCDIR)/csv_parser.cpp $(SRCDIR)/Schema.cpp \
        $(SRCDIR)/DbString.cpp $(SRCDIR)/Meta.cpp $(SRCDIR)/Column.cpp \
        $(SRCDIR)/DataBlock.cpp $(SRCDIR)/QueryNodes.cpp $(SRCDIR)/Main.cpp
 OBJS = $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
