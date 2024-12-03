@@ -9,6 +9,8 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <iostream>
+#include <chrono>
 
 #define DBINT 1
 #define DBCHAR 2
@@ -40,6 +42,18 @@ void backup_table_data(const std::string& table_name);
 typedef std::vector<int>* RowID_vector;
 RowID_vector mergeAndRemoveDuplicates(RowID_vector vec1, RowID_vector vec2);
 
+
+/*----------------------------Timer------------------------------------*/
+
+
+
+
+#define CHRONO_NOW (std::chrono::high_resolution_clock::now())
+
+#define TIME_DIFF(st_time, end_time) \
+		((std::chrono::duration_cast<std::chrono::microseconds>(end_time-st_time).count()) / 1e6)
+
+#define PRINT_TIME_TAKEN(msg, t) std::cout << msg << t << std::endl;
 /*---------------------------------------------------------------------*/
 
 
