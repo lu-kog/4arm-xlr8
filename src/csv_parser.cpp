@@ -3,7 +3,7 @@
 #ifndef _CSVParser
 #define _CSVParser 0
 
-#define buffer_limit 10*1024*1024    //10 MB
+#define buffer_limit 100*1024*1024    //10 MB
 
 #include <iostream>
 #include <fstream>
@@ -70,31 +70,6 @@ std::vector<std::string> * parseCSV(std::ifstream &file) {
     }
     
 }
-
-
-
-
-
-#if 0
-int main() {
-    std::ifstream csvFile;
-    csvFile.open("/home/ajith-zstk355/temp.csv");
-    std::vector<std::string> * parsed = parseCSV(csvFile);
-
-    if (parsed != nullptr)
-    {
-        for (int i =0; i < parsed->size(); i++)
-        {
-            std::cout << i << "\t "<< (*parsed)[i] << std::endl;
-        }
-        
-    }
-
-
-    
-    return 0;
-}
-#endif
 
 
 #endif

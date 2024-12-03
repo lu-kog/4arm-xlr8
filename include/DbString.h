@@ -11,7 +11,7 @@
 
 
 
-#define FILE_LIMIT 1024*1024*10 
+#define FILE_LIMIT 1024*1024*1024  // 1gb limit for a string file
 
 
 struct Dbstr{

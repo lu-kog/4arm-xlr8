@@ -839,44 +839,78 @@ std::vector<selected_col_opj> * get_selected_data(SelectNode &select, RowID_vect
 }
 
 void print_data_col_obj(std::vector<selected_col_opj> &se_d, int number_rows) {
-
-
     int number_columns = se_d.size();
 
-    for (size_t i = 0; i < number_rows; i++)
-    {
-        // std::cout << "\n|------------------------------------------|\n" << std::endl;
-        std::cout << "\n|";
-        for (size_t j = 0; j < number_columns; j++)
-        {
-            std::cout << "\t";
-            selected_col_opj &obj = se_d[j];
+    // Step 1: Calculate maximum column widths
+    std::vector<int> column_widths(number_columns, 3); // Default minimum width
+
+    for (size_t j = 0; j < number_columns; j++) {
+        selected_col_opj &obj = se_d[j];
+        for (size_t i = 0; i < number_rows; i++) {
+            int len = 0;
             switch (obj.data_type) {
-                case DBINT: // int_data
-                    std::cout<< (*obj.all_data.int_data)[i] << "\t" << "|";
+                case DBINT: 
+                    len = std::to_string((*obj.all_data.int_data)[i]).size();
                     break;
-                case DBFLOAT: // float_data
-                    std::cout <<  (*obj.all_data.float_data)[i] << "\t"<<"|";
+                case DBFLOAT:
+                    len = std::to_string((*obj.all_data.float_data)[i]).size();
                     break;
-                case DBLONG: // long_data
-                    std::cout  << (*obj.all_data.long_data)[i] << "\t"<<"|";
+                case DBLONG:
+                    len = std::to_string((*obj.all_data.long_data)[i]).size();
                     break;
-                case DBDOUBLE: // double_data
-                    std::cout  << (*obj.all_data.double_data)[i] << "\t"<<"|";
+                case DBDOUBLE: {
+                    std::ostringstream oss;
+                    oss << std::fixed << std::setprecision(2) << (*obj.all_data.double_data)[i];
+                    len = oss.str().size();
                     break;
-                case DBSTRING: // str_data
-                    std::cout  << (*obj.all_data.str_data)[i] << "\t"<<"|";
+                }
+                case DBSTRING:
+                    len = (*obj.all_data.str_data)[i].size();
                     break;
-                case DBCHAR: // char_data
-                    std::cout<< (*obj.all_data.char_data)[i] << "\t"<<"|";
+                case DBCHAR:
+                    len = 1; // char is a single character
                     break;
                 default:
-                    std::cout << "Unknown data type." << std::endl;
+                    len = 0;
             }
+            column_widths[j] = std::max(column_widths[j], len + 2); // Add padding
+        }
+    }
+
+    // Step 2: Print rows with alignment
+    for (size_t i = 0; i < number_rows; i++) {
+        std::cout << "\n|";
+        for (size_t j = 0; j < number_columns; j++) {
+            selected_col_opj &obj = se_d[j];
+            std::cout << std::setw(column_widths[j]);
+            switch (obj.data_type) {
+                case DBINT:
+                    std::cout << (*obj.all_data.int_data)[i];
+                    break;
+                case DBFLOAT:
+                    std::cout << (*obj.all_data.float_data)[i];
+                    break;
+                case DBLONG:
+                    std::cout << (*obj.all_data.long_data)[i];
+                    break;
+                case DBDOUBLE:
+                    std::cout << std::fixed << std::setprecision(2) << (*obj.all_data.double_data)[i];
+                    break;
+                case DBSTRING:
+                    std::cout << (*obj.all_data.str_data)[i];
+                    break;
+                case DBCHAR:
+                    std::cout << (*obj.all_data.char_data)[i];
+                    break;
+                default:
+                    std::cout << "Unknown";
+            }
+            std::cout << "  |";
         }
     }
     std::cout << std::endl << std::endl;
 }
+
 
 
 /*--------------------------------------------------------------------------------------------------*/

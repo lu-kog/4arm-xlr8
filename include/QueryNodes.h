@@ -8,6 +8,7 @@
 #include <cstring>
 #include <future>
 #include<variant>
+#include <iomanip> // For std::setw
 #include "Utilities.h"
 #include "DbString.h"
 #include "Schema.h"
