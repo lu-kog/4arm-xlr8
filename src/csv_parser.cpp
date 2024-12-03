@@ -3,7 +3,7 @@
 #ifndef _CSVParser
 #define _CSVParser 0
 
-#define buffer_limit 5*1024    //1 MB
+#define buffer_limit 10*1024*1024    //10 MB
 
 #include <iostream>
 #include <fstream>

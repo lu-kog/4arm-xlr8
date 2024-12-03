@@ -590,7 +590,7 @@ RowID_vector sort_data(const std::string &table_name,SortNode *sort_n, LimitNode
     }
 
     //Limit Impl
-    if (N != nullptr){
+    if (N != nullptr && ( N->limit < result->size())){
         result->resize(N->limit);
     }
 
@@ -718,6 +718,12 @@ RowID_vector run_query_nodes(QueryNode &qn){
     if (qn.filterNode != nullptr)
     {
         result= qn.filterNode->execute(table_name);
+
+        // limit impl have it
+        if ( (qn.limitNode != nullptr) && ( qn.limitNode->limit < result->size()))
+        {
+            result->resize(qn.limitNode->limit);
+        }
     }
     if (qn.sortNode)
     {
@@ -736,7 +742,7 @@ RowID_vector run_query_nodes(QueryNode &qn){
 
 
 void execute_select(QueryNode &qn){
-    RowID_vector result = run_query_nodes(qn);    
+    RowID_vector result = run_query_nodes(qn);
     std::vector<selected_col_opj> * sel_data = get_selected_data(qn.selectNode,result);
     print_data_col_obj(*sel_data,result->size());
 

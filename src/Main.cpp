@@ -10,7 +10,8 @@ int main(int argc, char const *argv[])
     get_home_folder();
 
     // create_table(tableName,columnNames,columnDataTypes);
-    // insert(tableName,"/home/ajith-zstk355/GDP.csv");
+
+    // insert(tableName,"/home/ajith-zstk355/GDP_tmp.csv");
 
     // year,rank,country,state,gdp,gdp_percent
 
@@ -20,13 +21,15 @@ int main(int argc, char const *argv[])
 
     FilterNode rn("year", 2020, EQUALS);
 
-    FilterNode ln ("rank",100,EQUALS);
+    FilterNode ln ("rank",14,LESS_THAN);
 
 
     FilterNode fn(&rn,&ln,AND);
 
     qn.filterNode = &ln;
 
+    LimitNode lin(15);
+    qn.limitNode = &lin;
     SortNode sn(columnNames.at(1), ASC);
 
     // qn.isDelete = true;
@@ -35,9 +38,9 @@ int main(int argc, char const *argv[])
     // execute_update(qn);
 
     execute_select(qn);
-    execute_delete(qn);
-    qn.filterNode =  nullptr;
-    execute_select(qn);
+    // execute_delete(qn);
+    // qn.filterNode =  nullptr;
+    // execute_select(qn);
 
 
     return 0;
