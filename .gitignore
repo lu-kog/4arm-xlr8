@@ -4,4 +4,4 @@ obj/
 a.out
 app
 src/Main
-srt/Main.cpp
+src/Main.cpp
