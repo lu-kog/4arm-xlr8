@@ -79,3 +79,10 @@ std::string Logger::logLevelToString(LogLevel level) {
     }
 }
 
+
+
+//save logger while abortion
+void Logger::save_logger(){
+    if(logFile.is_open())
+        logFile.close();
+};

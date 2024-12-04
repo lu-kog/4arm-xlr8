@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <iostream>
 #include <chrono>
+#include <csignal>
 #include "Logger.h"
 
 #define DBINT 1

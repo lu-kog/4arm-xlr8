@@ -1,5 +1,17 @@
 #include "../include/Utilities.h"
 
+void handle_abortion(int sig) {
+    if (sig == SIGINT) {
+        Logger::getInstance().save_logger();      
+    }
+    exit(1);
+}
+void init_db(){
+    get_home_folder();
+    Logger::getInstance().setLogLevel(Logger::LogLevel::INFO);
+    Logger::getInstance().setLogFile(get_path()+".log");
+    std::signal(SIGINT,handle_abortion);
+}
 
 /*--------------------------------------------------------------------*/
 
@@ -30,8 +42,6 @@ void get_home_folder(){
     }
 
     path += "/";
-    Logger::getInstance().setLogLevel(Logger::LogLevel::INFO);
-    Logger::getInstance().setLogFile(path+".log");
 
 }
 

@@ -46,6 +46,7 @@ public:
     void setLogFile(const std::string& filename);
 
     void log(LogLevel level, const std::string& message);
+    void save_logger();
 
 private:
     LogLevel currentLogLevel;
