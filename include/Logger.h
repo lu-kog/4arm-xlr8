@@ -31,9 +31,9 @@
 
 /*---------------------------------------------------------------------*/
 
-class Logger {
-public:
-    enum class LogLevel {
+struct Logger {
+
+    enum LogLevel {
         DEBUG,
         INFO,
         WARNING,
@@ -48,7 +48,6 @@ public:
     void log(LogLevel level, const std::string& message);
     void save_logger();
 
-private:
     LogLevel currentLogLevel;
     std::ofstream logFile;
     std::mutex logMutex; // For thread-safe logging
