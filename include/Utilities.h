@@ -24,6 +24,8 @@
 #define RECORDS_LIMIT 100
 #define BLOCK_LIMIT 100
 
+void init_db();
+
 // File IO functions
 static std::string path;
 void get_home_folder();
