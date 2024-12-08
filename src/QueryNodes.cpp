@@ -746,6 +746,8 @@ void execute_select(QueryNode &qn){
     std::vector<selected_col_opj> * sel_data = get_selected_data(qn.selectNode,result);
     print_data_col_obj(*sel_data,result->size());
 
+    std::cout << "\nTotal Records: " << result->size() << "\n"<< std::endl;
+
 }
 
 
