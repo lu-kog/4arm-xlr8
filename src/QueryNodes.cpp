@@ -708,9 +708,9 @@ RowID_vector run_query_nodes(QueryNode &qn){
     const std::string &table_name = qn.selectNode.tableName;
     std::vector<std::string> * columns = &qn.selectNode.columns;
 
-    if (columns->empty())
+    if (columns->size() == 0)
     {
-        columns = get_all_column_names(table_name);
+        qn.selectNode.columns = *get_all_column_names(table_name);
     }
     
 
