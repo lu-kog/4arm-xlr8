@@ -225,26 +225,43 @@ bool compute(const T & filter_value , const T &row_value, ConditionType op){
 template <typename T>
 bool block_meta_check(FilterNode & f_node,T min, T max)
 {   
-
+    auto check_with_cond = [](T mn, T mx, ConditionType cond, T comp_value) -> bool {
+        switch (cond)
+        {
+        case EQUALS:
+            return (comp_value >= mn && comp_value <= mx);
+        case NOT_EQUALS:
+            return true;
+        case LESS_THAN:
+            return (comp_value > mn) ;
+        case GREATER_THAN:
+            return (comp_value < mx) ;
+        default:
+            LOG_ERROR("Unsupported conditions in block meta check.");
+            throw std::runtime_error("Unsupported conditions in block meta check.");
+        }
+    };
     switch (f_node.data_type)
     {
     case DBCHAR:
-        return (f_node.value.c >= min && f_node.value.c <= max);
+
+        return check_with_cond(min, max, f_node.conditionType, f_node.value.c);
         break;
     case DBDOUBLE:
-        return (f_node.value.d >= min && f_node.value.d <= max);
+        return check_with_cond(min, max, f_node.conditionType, f_node.value.d);
         break;
     case DBINT:
-        return (f_node.value.i >= min && f_node.value.i <= max);
+        return check_with_cond(min, max, f_node.conditionType, f_node.value.i);
         break;
     case DBFLOAT:
-        return (f_node.value.f >= min && f_node.value.f <= max);
+        return check_with_cond(min, max, f_node.conditionType, f_node.value.f);
         break;
     case DBLONG:
-        return (f_node.value.l >= min && f_node.value.l <= max);
+        return check_with_cond(min, max, f_node.conditionType, f_node.value.l);
         break;
     default:
-        throw std::invalid_argument("Unexpected datatype");
+        LOG_ERROR("Unexpected datatype in blocks skipping");
+        throw std::invalid_argument("Unexpected datatype in blocks skipping");
         break;
     }
 
@@ -272,7 +289,7 @@ RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vecto
         }
         
     }
-    
+    std::cout << selected_blocks.size() << std::endl;
     std::set<int> filterSet;  // for hashtable only
     if (rows_to_process)
     {
@@ -317,8 +334,8 @@ RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vecto
         }
 
         for (const data<T>& d : *current_batch_data) {
-            // Apply row filtering if applicable
-            if (!rows_to_process || filterSet.count(d.row_id)) {
+            // Apply if no filtered sets or row_id matches in filtered set
+            if (rows_to_process==nullptr || filterSet.count(d.row_id)) {
                 // Apply condition check
                 if (compute(filter_value, d.datum, this->conditionType)) {
                     filtered_ids.push_back(d.row_id);
@@ -335,7 +352,7 @@ RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vecto
         
     }
     
-
+    std::vector<int> & rs = *result;
     return result;
 }
 
@@ -350,6 +367,10 @@ RowID_vector FilterNode::validate_and_apply(const std::string &table_name, RowID
 
     if (this->data_type == DBSTRING || col_type != this->data_type)
     {
+        LOG_ERROR("Invalid type for the conditions! F_DT: " +
+                  std::to_string(this->data_type) +
+                  " Col_DT: " +
+                  std::to_string(col_type));
         throw std::invalid_argument("Invalid type for the conditions!");
     }
 
@@ -386,6 +407,8 @@ RowID_vector FilterNode::execute(const std::string &table_name){
     if (this->conditionType == AND)
     {
         RowID_vector filtered_row_id = this->left->execute(table_name);
+        std::vector<int> & rs = *filtered_row_id;
+
         return right->execute(table_name, filtered_row_id);
 
     }else if(this->conditionType == OR)
