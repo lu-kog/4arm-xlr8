@@ -308,6 +308,9 @@ std::vector<data<T>> * get_data_with_rowid(const std::string &table_name, const 
     if(filterd_rows != nullptr){
 
         if (all_data->size() < filterd_rows->size()) {
+            std::string err = "The number of filtered rows exceeds the total number of rows in the column";
+            LOG_ERROR(err+ " all-data_size = " + std::to_string(all_data->size())
+                + "  filtered-rows-size = " + std::to_string(filterd_rows->size()));
             throw std::runtime_error("The number of filtered rows exceeds the total number of rows in the column.");
         }
 

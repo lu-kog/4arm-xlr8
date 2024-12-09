@@ -78,7 +78,11 @@ std::string str_file_reader(const std::string& table_name, const Dbstr& str_info
 
     if (file_to_make_non_rep_string.file_no_for_str != file_no)
     {
+        if(inFile.is_open()){
+            inFile.close();
+        }
         inFile.open(file_name, std::ios::binary);
+
         if (!inFile) {
             throw std::runtime_error("Failed to open file: " + file_name);
         }
