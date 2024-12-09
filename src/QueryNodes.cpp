@@ -718,19 +718,22 @@ RowID_vector run_query_nodes(QueryNode &qn){
     if (qn.filterNode != nullptr)
     {
         result= qn.filterNode->execute(table_name);
+        std::vector<int> & rs = *result;
 
-        // limit impl have it
-        if ( (qn.limitNode != nullptr) && ( qn.limitNode->limit < result->size()))
-        {
-            result->resize(qn.limitNode->limit);
-        }
     }
     if (qn.sortNode)
     {
         result = get_sorted_data(table_name,qn.sortNode,result,qn.limitNode);
+    }else{
+        // limit impl have it
+        // when filter accurse and limit without sort case here.
+        if ((qn.filterNode != nullptr) && (qn.limitNode != nullptr) && ( qn.limitNode->limit < result->size()))
+        {
+            result->resize(qn.limitNode->limit);
+        }
     }
 
-    //Only limit node found
+    // Only limit node found
     if (result == nullptr)
     {
         result = get_limit_data(table_name,columns->at(0), qn.limitNode);
@@ -743,6 +746,7 @@ RowID_vector run_query_nodes(QueryNode &qn){
 
 void execute_select(QueryNode &qn){
     RowID_vector result = run_query_nodes(qn);
+    std::vector<int> & rs = *result;
     std::vector<selected_col_opj> * sel_data = get_selected_data(qn.selectNode,result);
     print_data_col_obj(*sel_data,result->size());
 
