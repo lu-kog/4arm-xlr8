@@ -289,7 +289,7 @@ RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vecto
         }
         
     }
-    std::cout << selected_blocks.size() << std::endl;
+
     std::set<int> filterSet;  // for hashtable only
     if (rows_to_process)
     {
