@@ -11,7 +11,7 @@ std::pair<block_meta<T> *, int> get_all_block_meta(const std::string &table_name
 
     int no_blocks = curr_col_meta->no_block;
     int column_meta_size = sizeof(column_meta);
-    int block_size = sizeof(block_meta<T>) + (100 * sizeof(data<T>));
+    int block_size = sizeof(block_meta<T>) + (RECORDS_LIMIT * sizeof(data<T>));
 
     int offset_for_file = column_meta_size;
     

@@ -41,7 +41,7 @@ template <typename T>
 block_obj<T> * readIncompleteBlockFromFile(const column_meta& col_meta, std::string& table_name, std::string& col_name) {
     /* Get path & read from file */
     std::string file_path = get_path() + table_name + "/" + col_name;
-    int offset = sizeof(column_meta) + ((col_meta.no_block - 1) * sizeof(block_meta<T>)) + ((col_meta.no_block - 1) * 100 * sizeof(data<T>));
+    int offset = sizeof(column_meta) + ((col_meta.no_block - 1) * sizeof(block_meta<T>)) + ((col_meta.no_block - 1) * RECORDS_LIMIT * sizeof(data<T>));
     
 
     block_obj<T> *lastBlock = new block_obj<T>();
@@ -171,7 +171,7 @@ template <typename T>
 void dump_new_records(std::vector<block_obj<T>> & new_blocks, std::string &table_name, std::string &col_name, int file_offset){
     int blocks_count = new_blocks.size();
     int block_meta_size = sizeof(block_meta<T>);
-    int block_data_size = 100 * sizeof(data<T>);
+    int block_data_size = RECORDS_LIMIT * sizeof(data<T>);
 
     int buffer_size = (blocks_count * block_meta_size) + (blocks_count * block_data_size);
     char * buffer =  (char *) malloc(buffer_size);
@@ -222,7 +222,7 @@ data<T> * get_block_data(std::ifstream &file, const int block_no , const block_m
     int column_meta_size = sizeof(column_meta); 
     int block_meta_size = sizeof(block_meta<T>);
     int data_size = sizeof(data<T>);
-    int block_size =   block_meta_size + (data_size * 100);
+    int block_size =   block_meta_size + (data_size * RECORDS_LIMIT);
 
     int offset =  column_meta_size + ((block_no-1) * block_size);
 

@@ -299,7 +299,7 @@ RowID_vector FilterNode::apply_filter(const std::string& table_name, RowID_vecto
 
     RowID_vector result = new std::vector<int>();
     
-    const int BLOCK_VECTOR_LIMIT = 100;  // 100 blocks data per batch
+    const int BLOCK_VECTOR_LIMIT = BLOCK_LIMIT;  // 100 blocks data per batch
 
     int batch_end = 0;
     for (int i = 0; i< selected_blocks.size(); i += batch_end)
