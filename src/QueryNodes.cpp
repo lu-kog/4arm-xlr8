@@ -771,7 +771,7 @@ void execute_select(QueryNode &qn){
     RowID_vector result = run_query_nodes(qn);
     std::vector<int> & rs = *result;
     std::vector<selected_col_opj> * sel_data = get_selected_data(qn.selectNode,result);
-    print_data_col_obj(*sel_data,result->size());
+    // print_data_col_obj(*sel_data,result->size());
 
     std::cout << "\nTotal Records: " << result->size() << "\n"<< std::endl;
 
@@ -1060,8 +1060,9 @@ void execute_update(QueryNode &qn){
         std::cerr << e.what() << '\n';
     }
     
+    std::cout << filtered_rows->size() << " rows updated!" << std::endl;
     delete temp_col;
-   
+    delete filtered_rows;
 }
 
 
