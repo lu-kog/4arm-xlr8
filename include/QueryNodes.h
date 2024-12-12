@@ -7,6 +7,7 @@
 #include <string>
 #include <cstring>
 #include <thread>
+#include <atomic>
 #include<variant>
 #include <iomanip> // For std::setw
 #include "Utilities.h"
