@@ -31,7 +31,7 @@ void create_table(std::string table_name,std::vector <std::string> &columns_name
 void insertIntoTable(std::vector<column_obj> &columns_to_insert, std::string &table_name, schema_meta &table_schema) {
     backup_table_data(table_name);
 
-    std::vector<std::future<void>> futures;
+    std::vector<std::thread> threads;
     std::atomic<bool> gotError(false); // Flag signals for threads
 
     try
@@ -39,13 +39,13 @@ void insertIntoTable(std::vector<column_obj> &columns_to_insert, std::string &ta
         for (int i = 0; i < table_schema.number_of_columns; i++)
         {
             std::string col_name(table_schema.fields[i].second, table_schema.fields[i].first);
-            futures.push_back(std::async(createBlocks, std::ref(columns_to_insert.at(i)), std::ref(table_name), col_name));
+            threads.push_back(std::thread(createBlocks, std::ref(columns_to_insert.at(i)), std::ref(table_name), col_name));
         }
         
-        for (auto &fut : futures) {
+        for (auto &thr : threads) {
             try
             {
-                fut.get();  // Wait for all threads to complete
+                thr.join();  // Wait for all threads to complete
             }
             catch(const std::exception& e)
             {
@@ -951,20 +951,20 @@ void mark_as_deleted(QueryNode &qn, RowID_vector & rows_to_delete){
     schema_meta * table = read_schema(qn.selectNode.tableName);
     std::string table_name = qn.selectNode.tableName;
 
-    std::vector<std::future<void>> futures;
+    std::vector<std::thread> threads;
     std::atomic<bool> gotError(false); // Flag signals for threads
     try
     {
         for (int i = 0; i < table->number_of_columns; i++)
         {
             std::string col_name(table->fields[i].second, table->fields[i].first);
-            futures.push_back(std::async(to_update_records, table_name, col_name, DELELT, table->data_type[i], rows_to_delete, nullptr));
+            threads.push_back(std::thread(to_update_records, table_name, col_name, DELELT, table->data_type[i], rows_to_delete, nullptr));
         }
         
-        for (auto &fut : futures) {
+        for (auto &thr : threads) {
             try
             {
-                fut.get();  // Wait for all threads to complete
+                thr.join();  // Wait for all threads to complete
             }
             catch(const std::exception& e)
             {
