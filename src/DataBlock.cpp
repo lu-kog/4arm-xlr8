@@ -343,7 +343,7 @@ std::vector<block_obj<T>> * get_blocks_chunk(std::string table_name, std::string
     
     std::pair<block_meta<T> *, int> all_blk_meta = get_all_block_meta<T>(table_name, col_name);
     
-    int last_block_no = ((col_meta.no_block - block_no) >= BLOCK_LIMIT)?(block_no+BLOCK_LIMIT):col_meta.no_block;
+    int last_block_no = ((col_meta.no_block - block_no) >= BLOCK_LIMIT)?(block_no+BLOCK_LIMIT-1):col_meta.no_block;  // to get 100 blocks from the given block id
 
     std::ifstream file(file_path, std::ios::binary);
 
