@@ -185,13 +185,6 @@ void insert(std::string table_name, std::string csv_path){
         std::vector<column_obj> table_data; 
         type_casting(*parsed,*schema, table_data,table_name);
         insertIntoTable(table_data,table_name, *schema);
-
-        for (size_t i = 0; i < schema->number_of_columns; i++)
-        {
-            std::string col_name(schema->fields[i].second,schema->fields[i].first);
-            column_meta * col_met = get_column_meta(table_name,col_name);
-            delete col_met;
-        }
         
     }
     
@@ -853,6 +846,8 @@ selected_col_opj  get_data_as_union(const std::string &table_name, const std::st
             throw std::invalid_argument("Unexpected data type in sort node");
         };
     }
+
+    delete col_meta;
     return col_obj;
 }
 

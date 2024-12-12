@@ -21,7 +21,7 @@ std::vector<std::string> * parseCSV(std::ifstream &file);
 enum ConditionType { EQUALS, NOT_EQUALS, LESS_THAN, GREATER_THAN, OR, AND };
 
 struct selected_col_opj{
-    int data_type;
+    int data_type = 0;
     union{
         std::vector<int> *int_data;
         std::vector<float> *float_data;
