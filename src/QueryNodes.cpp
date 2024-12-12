@@ -185,6 +185,7 @@ void insert(std::string table_name, std::string csv_path){
         std::vector<column_obj> table_data; 
         type_casting(*parsed,*schema, table_data,table_name);
         insertIntoTable(table_data,table_name, *schema);
+        delete parsed;
         
     }
     
