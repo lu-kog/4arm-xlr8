@@ -765,7 +765,7 @@ void execute_select(QueryNode &qn){
     RowID_vector result = run_query_nodes(qn);
     std::vector<int> & rs = *result;
     std::vector<selected_col_opj> * sel_data = get_selected_data(qn.selectNode,result);
-    // print_data_col_obj(*sel_data,result->size());
+    print_data_col_obj(*sel_data,result->size());
 
     std::cout << "\nTotal Records: " << result->size() << "\n"<< std::endl;
 
@@ -1128,6 +1128,7 @@ void update_records(std::string table_name, std::string col_name, QueryType qt, 
         // block meta updation??
 
     }
+    
     
     dump_blocks_chunk<T>(table_name, col_name, *data_chunk, chunk_block_no);
 
